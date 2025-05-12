@@ -28,7 +28,7 @@ passport.use(
             image: profile.photos[0]?.value || '', // Store Google profile image URL directly
           });
         } else if (!user.image && profile.photos && profile.photos[0]) {
-          // Update user with Google profile image if they don't have one
+          
           user.image = profile.photos[0].value;
           await user.save();
         }
