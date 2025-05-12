@@ -1,0 +1,28 @@
+<!-- Placeholder SVG for login illustration -->
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .illustration {
+      font: 14px sans-serif;
+    }
+  </style>
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <g transform="translate(80, 60)">
+    <!-- Computer screen -->
+    <rect x="0" y="0" width="240" height="160" rx="5" fill="#ffffff" stroke="#333" stroke-width="2"/>
+    <rect x="0" y="0" width="240" height="20" rx="5" fill="#e9ecef"/>
+    <circle cx="10" cy="10" r="4" fill="#ff6b6b"/>
+    <circle cx="25" cy="10" r="4" fill="#ffd93d"/>
+    <circle cx="40" cy="10" r="4" fill="#6fd08c"/>
+    
+    <!-- Lock icon -->
+    <g transform="translate(110, 80)">
+      <rect x="-20" y="-10" width="40" height="40" rx="5" fill="#ffe0e0"/>
+      <path d="M0,0 C-6,0 -10,-4 -10,-10 C-10,-16 -6,-20 0,-20 C6,-20 10,-16 10,-10 C10,-4 6,0 0,0" fill="#ff6b6b" stroke="#d63031" stroke-width="2"/>
+      <rect x="-15" y="0" width="30" height="20" rx="2" fill="#ff6b6b" stroke="#d63031" stroke-width="2"/>
+      <circle cx="0" cy="10" r="3" fill="#ffffff"/>
+      <rect x="-1" y="10" width="2" height="5" fill="#ffffff"/>
+    </g>
+  </g>
+  <text x="200" y="240" text-anchor="middle" class="illustration" font-weight="bold" fill="#333">Login Security Illustration</text>
+  <text x="200" y="260" text-anchor="middle" class="illustration" fill="#666">Secure authentication with OTP</text>
+</svg>

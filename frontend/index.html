@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/images/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NutureMite - Discover expert health tips, natural remedies, and wellness advice" />
+    <meta name="theme-color" content="#f97316" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="NutureMite - Premium Organic Snacks" />
+    <meta property="og:description" content="Discover nature's finest selection of nutritious and delicious organic snacks for your healthy lifestyle." />
+    <meta property="og:image" content="/images/logo.png" />
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/fonts/your-main-font.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    
+    <!-- Preload critical stylesheets -->
+    <link rel="preload" href="/src/index.css" as="style" />
+    
+    <!-- Improve LCP by inlining critical CSS -->
+    <style>
+      /* Minimal styles for initial render */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      #root {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+    </style>
+    
+    <title>NutureMite - Premium Organic Snacks</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Optional: Add a minimal loading indicator that will show until React hydrates -->
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <img src="/images/logo.png" alt="NutureMite" width="100" height="100" style="opacity: 0.7;" />
+      </div>
+    </div>
+    
+    <!-- Load the main script with best practices -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhonePe Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #6739B7;
+    }
+    h2 {
+      color: #444;
+      margin-top: 30px;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+      background-color: #f9f9f9;
+    }
+    .card h3 {
+      margin-top: 0;
+    }
+    button {
+      background-color: #6739B7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px 10px 0;
+    }
+    button:hover {
+      background-color: #5A2CA0;
+    }
+    .button-row {
+      margin: 10px 0;
+    }
+    .results {
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(103, 57, 183, 0.3);
+      border-radius: 50%;
+      border-top-color: #6739B7;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>PhonePe Integration Test Center</h1>
+  <p>Use this page to test different PhonePe integration approaches in <span id="environment-badge"></span> mode.</p>
+  
+  <h2>API Version 1 (Direct API)</h2>
+  <div class="card">
+    <h3>Standard PhonePe API</h3>
+    <p>Tests the standard PhonePe API integration (/pg/v1/pay) that is used in the application.</p>
+    <div class="button-row">
+      <button id="testV1ApiBtn">Test V1 API</button>
+    </div>
+    <div class="results" id="v1Results">Results will appear here...</div>
+  </div>
+  
+  <h2>API Version 2 (UI Checkout)</h2>
+  <div class="card">
+    <h3>PhonePe UI Checkout</h3>
+    <p>Tests the PhonePe UI Checkout integration which uses a different URL format.</p>
+    <div class="button-row">
+      <button id="testV2CheckoutBtn">Test UI Checkout</button>
+      <button id="openUiCheckoutBtn">Open in New Tab</button>
+    </div>
+    <div class="results" id="v2Results">Results will appear here...</div>
+  </div>
+  
+  <h2>Direct Checkout URL</h2>
+  <div class="card">
+    <h3>Direct Checkout (v4)</h3>
+    <p>Tests the simplified direct checkout URL format that often works better in production.</p>
+    <div class="button-row">
+      <button id="directCheckoutBtn">Test Direct Checkout</button>
+    </div>
+    <div class="results" id="directResults">Results will appear here...</div>
+  </div>
+  
+  <script>
+    // Determine the environment
+    const determineEnvironment = async () => {
+      try {
+        const response = await fetch('/api/debug-phonepe/test-phonepe');
+        const data = await response.json();
+        
+        const badge = document.getElementById('environment-badge');
+        if (data && data.environment) {
+          badge.textContent = data.environment;
+          badge.style.backgroundColor = data.environment === 'PRODUCTION' ? '#3eb978' : '#ff9800';
+          badge.style.color = 'white';
+          badge.style.padding = '3px 8px';
+          badge.style.borderRadius = '3px';
+          badge.style.fontWeight = 'bold';
+        }
+      } catch (error) {
+        console.error('Error determining environment:', error);
+      }
+    };
+    
+    // On page load, determine environment
+    window.addEventListener('DOMContentLoaded', determineEnvironment);
+    
+    // V1 API Test
+    document.getElementById('testV1ApiBtn').addEventListener('click', async () => {
+      const resultsElement = document.getElementById('v1Results');
+      resultsElement.innerHTML = '<div class="loading"></div> Testing PhonePe V1 API...';
+      
+      try {
+        const response = await fetch('/api/debug-phonepe/test-v1-api');
+        const data = await response.json();
+        
+        if (data.success) {
+          resultsElement.innerHTML = '<div class="success">✓ PhonePe V1 API test succeeded!</div>';
+          
+          // Extract payment URL from response
+          let paymentUrl = null;
+          if (data.response && data.response.data) {
+            if (data.response.data.instrumentResponse && data.response.data.instrumentResponse.redirectInfo) {
+              paymentUrl = data.response.data.instrumentResponse.redirectInfo.url;
+            } else if (data.response.data.paymentInstrumentDetails && 
+                    data.response.data.paymentInstrumentDetails.payPageInstrument && 
+                    data.response.data.paymentInstrumentDetails.payPageInstrument.redirectInfo) {
+              paymentUrl = data.response.data.paymentInstrumentDetails.payPageInstrument.redirectInfo.url;
+            }
+          }
+          
+          if (paymentUrl) {
+            resultsElement.innerHTML += `<p><strong>Payment URL:</strong> <a href="${paymentUrl}" target="_blank">${paymentUrl}</a></p>`;
+            resultsElement.innerHTML += `<p><button onclick="window.open('${paymentUrl}', '_blank')">Open Payment Page</button></p>`;
+          }
+          
+          resultsElement.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+          resultsElement.innerHTML = '<div class="error">✗ PhonePe V1 API test failed</div>';
+          resultsElement.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+      } catch (error) {
+        resultsElement.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+        console.error('V1 API test error:', error);
+      }
+    });
+    
+    // V2 UI Checkout Test
+    document.getElementById('testV2CheckoutBtn').addEventListener('click', async () => {
+      const resultsElement = document.getElementById('v2Results');
+      resultsElement.innerHTML = '<div class="loading"></div> Testing PhonePe V2 UI Checkout...';
+      
+      try {
+        const response = await fetch('/api/debug-phonepe/test-v2-checkout');
+        const text = await response.text();
+        
+        // If the response is HTML, extract the URL
+        if (text.includes('<html')) {
+          const match = text.match(/URL: (https:\/\/[^<]+)</);
+          if (match && match[1]) {
+            const checkoutUrl = match[1];
+            resultsElement.innerHTML = '<div class="success">✓ PhonePe V2 UI Checkout URL generated!</div>';
+            resultsElement.innerHTML += `<p><strong>Checkout URL:</strong> <a href="${checkoutUrl}" target="_blank">${checkoutUrl}</a></p>`;
+            resultsElement.innerHTML += `<p><button onclick="window.open('${checkoutUrl}', '_blank')">Open Checkout Page</button></p>`;
+            
+            // Store URL for the "Open in New Tab" button
+            document.getElementById('openUiCheckoutBtn').onclick = () => window.open(checkoutUrl, '_blank');
+          } else {
+            resultsElement.innerHTML = '<div class="error">✗ Could not extract checkout URL from response</div>';
+            resultsElement.innerHTML += `<pre>${text}</pre>`;
+          }
+        } else {
+          // Try to parse as JSON
+          try {
+            const data = JSON.parse(text);
+            if (data.success && data.checkoutUrl) {
+              resultsElement.innerHTML = '<div class="success">✓ PhonePe V2 UI Checkout URL generated!</div>';
+              resultsElement.innerHTML += `<p><strong>Checkout URL:</strong> <a href="${data.checkoutUrl}" target="_blank">${data.checkoutUrl}</a></p>`;
+              resultsElement.innerHTML += `<p><button onclick="window.open('${data.checkoutUrl}', '_blank')">Open Checkout Page</button></p>`;
+              
+              // Store URL for the "Open in New Tab" button
+              document.getElementById('openUiCheckoutBtn').onclick = () => window.open(data.checkoutUrl, '_blank');
+            } else {
+              resultsElement.innerHTML = '<div class="error">✗ PhonePe V2 UI Checkout test failed</div>';
+              resultsElement.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+          } catch (parseError) {
+            resultsElement.innerHTML = '<div class="error">✗ Could not parse response</div>';
+            resultsElement.innerHTML += `<pre>${text}</pre>`;
+          }
+        }
+      } catch (error) {
+        resultsElement.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+        console.error('V2 Checkout test error:', error);
+      }
+    });
+    
+    // Direct Checkout Test
+    document.getElementById('directCheckoutBtn').addEventListener('click', async () => {
+      const resultsElement = document.getElementById('directResults');
+      resultsElement.innerHTML = '<div class="loading"></div> Testing PhonePe Direct Checkout...';
+      
+      try {
+        const response = await fetch('/api/debug-phonepe/direct-checkout');
+        const text = await response.text();
+        
+        // Extract URL from HTML response
+        const match = text.match(/URL: (https:\/\/[^<]+)</);
+        if (match && match[1]) {
+          const checkoutUrl = match[1];
+          resultsElement.innerHTML = '<div class="success">✓ PhonePe Direct Checkout URL generated!</div>';
+          resultsElement.innerHTML += `<p><strong>Checkout URL:</strong> <a href="${checkoutUrl}" target="_blank">${checkoutUrl}</a></p>`;
+          resultsElement.innerHTML += `<p><button onclick="window.open('${checkoutUrl}', '_blank')">Open Checkout Page</button></p>`;
+        } else {
+          resultsElement.innerHTML = '<div class="error">✗ Could not extract checkout URL from response</div>';
+          resultsElement.innerHTML += `<pre>${text}</pre>`;
+        }
+      } catch (error) {
+        resultsElement.innerHTML = `<div class="error">✗ Error: ${error.message}</div>`;
+        console.error('Direct checkout test error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
