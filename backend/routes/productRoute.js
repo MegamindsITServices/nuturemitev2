@@ -2,7 +2,6 @@ import express from "express";
 import {
   addProduct,
   deleteProduct,
- 
   getProducts,
   getProductsByCollectionId,
   updateProduct,
@@ -10,6 +9,7 @@ import {
   getProductsByCollection,
   getProductsByPrice,
   getProductBySlug,
+  getProductById,
 } from "../controller/productController.js";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -34,16 +34,44 @@ const storage = multer.diskStorage({
       cb(null, Date.now() + "-" + file.originalname);
     },
   });
-  
-const upload = multer({ storage: storage });
+
+// Configure multer for both images and videos
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Check if file is an image or video
+    if (file.fieldname === 'images') {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed for images field'), false);
+      }
+    } else if (file.fieldname === 'videos') {
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed for videos field'), false);
+      }
+    } else {
+      cb(null, true);
+    }
+  }
+});
+
 const productRoute = express.Router();
 
+// Create fields configuration for multiple file types
+const uploadFields = [
+  { name: 'images', maxCount: 10 },  // Max 10 images
+  { name: 'videos', maxCount: 3 }    // Max 3 videos
+];
 
 // Routes with multer middleware for image uploads
-productRoute.post("/add-product", upload.array("images", 2), addProduct);
+productRoute.post("/add-product", upload.fields(uploadFields), addProduct);
 productRoute.get("/get-products", getProducts);
 productRoute.get("/get-product/:slug", getProductBySlug);
-productRoute.put("/update-product/:id", upload.array("images", 2), updateProduct);
+productRoute.get("/get-product-by-id/:id", getProductById);
+productRoute.put("/update-product/:id", upload.fields(uploadFields), updateProduct);
 productRoute.delete("/delete-product/:id", deleteProduct);
 productRoute.get("/get-products-by-collection/:collectionId", getProductsByCollectionId);
 

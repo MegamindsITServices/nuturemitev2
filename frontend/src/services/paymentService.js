@@ -26,6 +26,48 @@ export const paymentService = {
       throw error;
     }
   },
+    // Create a Cash on Delivery order
+  createCodOrder: async (orderData) => {
+    try {
+      // Ensure totalPrice is properly set and is a number
+      if (!orderData.totalPrice || isNaN(orderData.totalPrice)) {
+        console.error('Invalid totalPrice:', orderData.totalPrice);
+        throw new Error('Total price is required and must be a number');
+      }
+      
+      // Log the request for debugging
+      console.log('Creating COD order with data:', {
+        ...orderData,
+        buyer: orderData.buyer ? 'VALID_BUYER_ID' : 'MISSING_BUYER', // Don't log actual ID
+        totalPrice: Number(orderData.totalPrice).toFixed(2)
+      });
+      
+      // Make the request with authorization if token exists
+      const token = localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')).token : null;
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await apiClient.post('/api/order/create-order', orderData, { headers });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating COD order:', error);
+      // Add more helpful error message
+      if (error.response?.status === 500) {
+        console.error('Server error details:', error.response.data);
+      }
+      throw error;
+    }
+  },
+  
+  // Clear the cart after order placement
+  clearCart: async (userId) => {
+    try {
+      const response = await apiClient.post('/api/cart/clear', { userId });
+      return response.data;
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      throw error;
+    }
+  },
   
   // Verify payment status
   verifyPayment: async (orderId) => {

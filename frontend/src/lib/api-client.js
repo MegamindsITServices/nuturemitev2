@@ -1,4 +1,4 @@
-export const backendURL = "https://nuturemite-server.onrender.com";
+export const backendURL = "http://localhost:8080";
 export const AUTH_ROUTE = 'api/auth';
 export const PRODUCT_ROUTE = 'api/product';
 export const COLLECTION_ROUTE = 'api/collections';
@@ -15,11 +15,14 @@ export const USER_INFO = `${AUTH_ROUTE}/user-info`
 export const ADMIN_PROTECTED = `${AUTH_ROUTE}/admin-auth`
 export const LOGOUT = `${AUTH_ROUTE}/logout`
 export const AUTH_PROFILE = `${AUTH_ROUTE}/profile`
+export const ADD_ADMIN = `${AUTH_ROUTE}/add-admin`
+export const GET_ADMINS = `${AUTH_ROUTE}/get-admins`
+export const UPDATE_ADMIN = `${AUTH_ROUTE}/update-admin`
 
 // Product endpoints
 export const ADD_PRODUCT = `${PRODUCT_ROUTE}/add-product`
 export const GET_PRODUCTS = `${PRODUCT_ROUTE}/get-products`
-export const GET_PRODUCT_BY_ID = `${PRODUCT_ROUTE}/get-product/:id`
+export const GET_PRODUCT_BY_ID = `${PRODUCT_ROUTE}/get-product-by-id/:id`
 export const GET_PRODUCT_BY_SLUG = `${PRODUCT_ROUTE}/get-product/:slug`
 export const GET_PRODUCT_BY_COLLECTION = `${PRODUCT_ROUTE}/get-product-by-collection`
 export const GET_PRODUCT_BY_SEARCH = `${PRODUCT_ROUTE}/get-product-by-search`
@@ -29,6 +32,7 @@ export const GET_PRODUCT_BY_SORT = `${PRODUCT_ROUTE}/get-product-by-sort`
 export const UPDATE_PRODUCT = `${PRODUCT_ROUTE}/update-product/:id`
 export const DELETE_PRODUCT = `${PRODUCT_ROUTE}/delete-product/:id`
 export const GET_PRODUCTS_BY_COLLECTION = `${PRODUCT_ROUTE}/get-products-by-collection`
+
 
 // Collection endpoints
 export const ADD_COLLECTION = `${COLLECTION_ROUTE}/add-collection`

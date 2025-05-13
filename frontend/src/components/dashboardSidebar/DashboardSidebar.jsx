@@ -57,8 +57,7 @@ const data = {
           title: "Product Management",
           icon: <Box />,
           isActive: false,
-          items: [
-            {
+          items: [            {
               title: "All Products",
               link: "/admin/products",
               isActive: false,

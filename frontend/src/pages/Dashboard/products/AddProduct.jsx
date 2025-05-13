@@ -33,7 +33,9 @@ const AddProduct = () => {
     collection: "",
   });
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [imagesPreviews, setImagesPreviews] = useState([]);
+  const [videosPreviews, setVideosPreviews] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -109,7 +111,21 @@ const AddProduct = () => {
       setImagesPreviews(previews);
     }
   };
-  // Form submission
+
+  // Handle video files change
+  const handleVideosChange = (e) => {
+    const { files } = e.target;
+    if (files && files.length > 0) {
+      // Store the selected files for upload (max 3 videos)
+      const selectedFiles = Array.from(files).slice(0, 3);
+      setVideos(selectedFiles);
+      
+      // Create previews for all selected videos
+      const previews = selectedFiles.map(file => URL.createObjectURL(file));
+      setVideosPreviews(previews);
+    }
+  };
+    // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -128,15 +144,25 @@ const AddProduct = () => {
         }
       });
       
-      // Append multiple images
-      if (images.length > 0) {
-        images.forEach((image) => {
-          productFormData.append("images", image);
-        });
-      } else {
+      // Validate images - at least one is required
+      if (images.length === 0) {
         toast.error("Please select at least one image");
         setLoading(false);
         return;
+      }
+      
+      // Append multiple images
+      if (images.length > 0) {
+        for (let i = 0; i < images.length; i++) {
+          productFormData.append("images", images[i]);
+        }
+      }
+      
+      // Append videos if available
+      if (videos.length > 0) {
+        for (let i = 0; i < videos.length; i++) {
+          productFormData.append("videos", videos[i]);
+        }
       }
       
       // Send the request
@@ -165,6 +191,8 @@ const AddProduct = () => {
         });
         setImages([]);
         setImagesPreviews([]);
+        setVideos([]);
+        setVideosPreviews([]);
       }
     } catch (error) {
       console.error("Error adding product:", error);
@@ -348,12 +376,11 @@ const AddProduct = () => {
                 </SelectContent>
               </Select>
             </motion.div>            {/* Product Images */}
-            <motion.div variants={itemVariants} className="mb-6">
-              <Label
+            <motion.div variants={itemVariants} className="mb-6">              <Label
                 className="text-slate-700 font-medium mb-2 block"
                 htmlFor="productImages"
               >
-                Product Images<span className="text-red-500">*</span> (Select up to 2 images)
+                Product Images<span className="text-red-500">*</span> (Select up to 10 images)
               </Label>
               <div className="flex flex-col">
                 <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
@@ -366,7 +393,7 @@ const AddProduct = () => {
                     className="hidden"
                     multiple
                     required={images.length === 0}
-                    max="2"
+                    max="10"
                   />
                   <label
                     htmlFor="productImages"
@@ -380,9 +407,8 @@ const AddProduct = () => {
                               src={preview}
                               alt={`Product image ${index + 1}`}
                               className="h-28 object-contain"
-                            />
-                            <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
-                              {index === 0 ? 'Front' : 'Back'}
+                            />                            <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                              Image {index + 1}
                             </span>
                           </div>
                         ))}
@@ -402,9 +428,8 @@ const AddProduct = () => {
                             strokeWidth={2}
                             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
-                        </svg>
-                        <span className="text-slate-500">
-                          Click to upload product images (up to 2)
+                        </svg>                        <span className="text-slate-500">
+                          Click to upload product images (up to 10)
                         </span>
                         <span className="text-slate-400 text-sm mt-1">
                           First image will be used as the front image
@@ -430,6 +455,91 @@ const AddProduct = () => {
                       className="text-xs"
                     >
                       Clear images
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+            
+            {/* Video Upload Section */}
+            <motion.div variants={itemVariants} className="mb-6">
+              <Label
+                className="text-slate-700 font-medium mb-2 block"
+                htmlFor="productVideos"
+              >
+                Product Videos (Select up to 3 videos)
+              </Label>
+              <div className="flex flex-col">
+                <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
+                  <input
+                    type="file"
+                    id="productVideos"
+                    name="productVideos"
+                    onChange={handleVideosChange}
+                    accept="video/*"
+                    className="hidden"
+                    multiple
+                    max="3"
+                  />
+                  <label
+                    htmlFor="productVideos"
+                    className="cursor-pointer flex flex-col items-center justify-center h-32"
+                  >
+                    {videosPreviews.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {videosPreviews.map((preview, index) => (
+                          <div key={index} className="relative">
+                            <video
+                              src={preview}
+                              className="h-28 object-contain"
+                              controls
+                            />
+                            <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                              Video {index + 1}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <svg
+                          className="mx-auto h-12 w-12"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-slate-500">
+                          Click to upload product videos (up to 3)
+                        </span>
+                      </>
+                    )}
+                  </label>
+                </div>
+                
+                {videosPreviews.length > 0 && (
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-slate-600">
+                      {videos.length} {videos.length === 1 ? 'video' : 'videos'} selected
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setVideos([]);
+                        setVideosPreviews([]);
+                      }}
+                      className="text-xs"
+                    >
+                      Clear videos
                     </Button>
                   </div>
                 )}

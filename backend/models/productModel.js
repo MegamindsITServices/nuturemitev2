@@ -37,6 +37,7 @@ const productSchema = new mongoose.Schema({
     ref: "Review"
   }],
   images: [String],
+  videos: [String],
 },{timestamps:true});
 
 const Product = mongoose.model("Product", productSchema);

@@ -7,8 +7,9 @@ import BlogCard from "../../components/ui/blog-card";
 import { Atom, Cookie, Droplet, Heart, Leaf } from "lucide-react";
 import { products } from "../../data/products";
 import { blogPosts } from "../../data/blogs"; // Kept for fallback
-import { GET_COLLECTION, GET_PRODUCTS, GET_BLOGS, backendURL } from "../../lib/api-client";
+import { GET_COLLECTION, GET_PRODUCTS, GET_BLOGS, backendURL, GET_PRODUCTS_BY_COLLECTION } from "../../lib/api-client";
 import { axiosInstance } from "../../utils/request";
+import { Link } from "react-router-dom";
 
 // Lazy load the Collections component for better initial load performance
 const Collections = lazy(() => import("../collections/Collections"));
@@ -22,10 +23,14 @@ const Home = () => {
     blogs: false,
   });
   const [carouselImages, setCarouselImages] = useState([]);
-  const [getProducts, setGetProducts] = useState([]);  const [allCollections, setAllCollections] = useState([]);
+  const [getProducts, setGetProducts] = useState([]);
+  const [allCollections, setAllCollections] = useState([]);
+  const [comboCollections, setComboCollections] = useState([]);
+  const [comboProducts, setComboProducts] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [blogsLoading, setBlogsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [comboLoading, setComboLoading] = useState(true);
   
   const getAllProducts = async () => {
     setLoading(true);
@@ -45,6 +50,21 @@ const Home = () => {
       console.log("Collection data:", response.data);
       if (response.data && response.data.success) {
         setAllCollections(response.data.collections);
+        
+        // Filter collections that might be combo collections (based on naming convention)
+        const combos = response.data.collections.filter(collection => 
+          collection.name.toLowerCase().includes('combo') || 
+          collection.name.toLowerCase().includes('pack') || 
+          collection.name.toLowerCase().includes('bundle')
+        );
+        setComboCollections(combos);
+        
+        // Fetch products for the first combo collection if any exist
+        if (combos.length > 0) {
+          fetchComboProducts(combos[0]._id);
+        } else {
+          setComboLoading(false);
+        }
       } else if (response.data && Array.isArray(response.data.collections)) {
         setAllCollections(response.data.collections);
       } else if (Array.isArray(response.data)) {
@@ -56,9 +76,25 @@ const Home = () => {
     } catch (error) {
       console.error("Error fetching collections:", error);
       setAllCollections([]);
+      setComboLoading(false);
       throw error; // Re-throw to be caught by the main try-catch
     }
   };
+  
+  const fetchComboProducts = async (collectionId) => {
+    setComboLoading(true);
+    try {
+      const response = await axiosInstance.get(`${GET_PRODUCTS_BY_COLLECTION}/${collectionId}`);
+      if (response.data && response.data.success) {
+        setComboProducts(response.data.products);
+      }
+    } catch (error) {
+      console.error("Error fetching combo products:", error);
+    } finally {
+      setComboLoading(false);
+    }
+  };
+  
   const fetchBanners = async () => {
     try {
       const response = await axiosInstance.get('/api/banner/get-banner');
@@ -141,6 +177,10 @@ const Home = () => {
     getBlogs();
   }, []);
 
+  // Handle collection click for combo products
+  const handleCollectionClick = (collection) => {
+    window.location.href = `/products/collections/${collection.slug}`;
+  };
 
 const features = [
    {
@@ -407,7 +447,7 @@ const features = [
           </div>
         </section>
 
-        {/* Combo Products Carousel */}
+        {/* NEW: Combo Collections Section */}
         <section
           className="container mx-auto py-12 md:py-16 px-4 reveal-section"
           data-section="combos"
@@ -419,19 +459,98 @@ const features = [
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <ProductCarousel
-              title="Healthy Combos"
-              subtitle="Special bundles crafted for your wellness"
-              slidesToShow={4}
-              autoScroll={true}
-              scrollInterval={6000}
-            >
-              {products
-                .filter((p) => p.category.includes("Combo"))
-                .map((product) => (
-                  <ProductCard key={product.id} product={product} />
+            <div className="text-center mb-12">
+              <span className="text-orange-500 font-medium mb-2 block">
+                SPECIAL OFFERS
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Healthy Combo Packs
+              </h2>
+              <div className="h-1 w-20 bg-orange-500 mx-auto rounded-full"></div>
+              <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+                Carefully curated product combinations to meet your wellness goals
+              </p>
+            </div>
+
+            {comboLoading ? (
+              <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, index) => (
+                  <div key={index} className="border rounded-lg overflow-hidden transition-shadow">
+                    <div className="h-48 bg-gray-200"></div>
+                    <div className="p-4">
+                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mt-3"></div>
+                    </div>
+                  </div>
                 ))}
-            </ProductCarousel>
+              </div>
+            ) : (
+              <>
+                {comboCollections.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {comboCollections.slice(0, 3).map(collection => (
+                      <Link 
+                        key={collection._id} 
+                        to={`/combos/${collection._id}`}
+                        className="block group"
+                      >
+                        <div className="border rounded-lg overflow-hidden transition-shadow hover:shadow-lg">
+                          {collection.image ? (
+                            <div className="h-48 overflow-hidden">
+                              <img 
+                                src={`${backendURL}/collection/${collection.image}`} 
+                                alt={collection.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-48 bg-gradient-to-r from-orange-100 to-amber-100 flex items-center justify-center">
+                              <span className="text-4xl font-bold text-orange-500">{collection.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                          )}
+                          <div className="p-4">
+                            <h3 className="font-bold text-xl mb-1 group-hover:text-orange-500 transition-colors">
+                              {collection.name}
+                            </h3>
+                            {collection.description && (
+                              <p className="text-gray-600 text-sm line-clamp-2">{collection.description}</p>
+                            )}
+                            <p className="mt-3 text-sm font-medium text-orange-500">
+                              View Products →
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">No combo collections available at this time.</p>
+                  </div>
+                )}
+                
+                {comboProducts.length > 0 && (
+                  <div className="mt-12">
+                    <h3 className="text-2xl font-bold mb-6">Featured Combo Products</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {comboProducts.slice(0, 4).map(product => (
+                        <ProductCard key={product._id} product={product} />
+                      ))}
+                    </div>
+                    
+                    <div className="text-center mt-8">
+                      <Link 
+                        to="/combos" 
+                        className="inline-block px-6 py-3 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
+                      >
+                        View All Combo Packs
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
 

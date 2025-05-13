@@ -85,6 +85,11 @@ app.use("/test", express.static(path.join(__dirname, "public")));
 app.use("/blog", express.static(path.join(__dirname, "blogs")));  // Fixed path for blog images
 app.use("/blogs", express.static(path.join(__dirname, "blogs"))); // Keep for backward compatibility
 app.use("/blogVideos", express.static(path.join(__dirname, "blogs/videos"))); // Path for blog videos
+app.use("/videos", express.static(path.join(__dirname, "uploads"))); // Direct access to videos in uploads folder
+
+// Import video route for video streaming
+import videoRoute from "./routes/videoRoute.js";
+app.use("/video", videoRoute); // Route for video streaming with advanced features
 // Session configuration
 app.use(
   session({

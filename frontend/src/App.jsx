@@ -22,6 +22,7 @@ import ComboProducts from "./pages/product/ComboProducts";
 import ViewCollections from "./pages/Dashboard/collections/ViewCollections";
 import { getConfig } from "./utils/request";
 import AddProduct from "./pages/Dashboard/products/AddProduct";
+import EditProduct from "./pages/Dashboard/products/EditProduct";
 import AllProducts from "./pages/Dashboard/products/AllProducts";
 import SearchResults from "./pages/product/SearchResults";
 import PriceSearchResults from "./pages/product/PriceSearchResults";
@@ -42,6 +43,9 @@ import AddBlog from "./pages/Dashboard/blogs/AddBlog";
 import ViewBlog from "./pages/Dashboard/blogs/ViewBlog";
 import BlogDetails from "./pages/blog/BlogDetails";
 import ContactUs from "./pages/about/ContactUs";
+import CustomerProtectedRoute from "./routes/CustomerProtectedRoute";
+import CustomerDashboardLayout from "./components/layouts/customerDashboardLayout/dashboard.layout";
+import CustomerDashboard from "./pages/CustomerDashboard/Dashboard";
 
 const App = () => {
   const location = useLocation();
@@ -96,6 +100,7 @@ const App = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="collections" element={<ViewCollections />} />
             <Route path="add-product" element={<AddProduct />} />
+            <Route path="edit-product/:id" element={<EditProduct />} />
             <Route path="products" element={<AllProducts />} />
             <Route path="add-banner" element={<AddBanner />} />
             <Route path="banners" element={<AllBanners />} />
@@ -105,6 +110,15 @@ const App = () => {
             <Route path="add-blog" element={<AddBlog />} />
             <Route path="blogs" element={<ViewBlog />} />
           </Route>
+        </Route>
+        {/* Customer Dashboard */}
+        <Route element={<CustomerProtectedRoute/>}>
+        <Route path="/customer" element={<CustomerDashboardLayout/>} >
+        <Route index element={<CustomerDashboard/>} />
+        <Route path="dashboard" element={<CustomerDashboard/>} />
+
+        </Route>
+
         </Route>
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />

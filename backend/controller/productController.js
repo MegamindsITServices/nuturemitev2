@@ -2,7 +2,14 @@ import slugify from "slugify";
 import Product from "../models/productModel.js";
 import Collection from "../models/collectionModel.js";
 import fs from "fs";
+import path from "path";
 import mongoose from "mongoose";
+
+// Get the uploads directory path
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, "../uploads");
 
 export const addProduct = async (req, res) => {
   try {
@@ -13,7 +20,16 @@ export const addProduct = async (req, res) => {
     if (feature && !['sold out', 'new', 'hot'].includes(feature)) {
       return res.status(400).json({ message: "Feature must be one of: 'sold out', 'new', 'hot'" });
     }
-    const images = req.files.map((file)=> file.filename) || []
+    
+    // Process uploaded images and videos
+    const images = req.files?.images?.map(file => file.filename) || [];
+    const videos = req.files?.videos?.map(file => file.filename) || [];
+    
+    // Validate minimum required files
+    if (images.length < 1) {
+      return res.status(400).json({ message: "At least 1 image is required" });
+    }
+    
     const slug = slugify(name, { lower: true });
     // Find collection by name or ID
     let collectionId;
@@ -35,8 +51,7 @@ export const addProduct = async (req, res) => {
         return res.status(404).json({ message: "Collection not found with the provided name" });
       }
       collectionId = collectionDoc._id;
-    }
-    // Create new product with image paths
+    }    // Create new product with image and video paths
     const newProduct = new Product({
       name,
       slug,
@@ -46,7 +61,8 @@ export const addProduct = async (req, res) => {
       discount,
       feature,
       collection: collectionId,
-      images
+      images,
+      videos
     });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
@@ -146,6 +162,58 @@ export const getProductBySlug = async (req, res) => {
   }
 };
 
+// Get product by ID
+export const getProductById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid product ID"
+      });
+    }
+    
+    const product = await Product.findById(productId)
+      .populate('collection', 'name slug')
+      .populate('reviews');
+      
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+    
+    // If product has reviews, calculate average rating
+    let avgRating = 0;
+    let reviewsCount = 0;
+    
+    if (product.reviews && product.reviews.length > 0) {
+      reviewsCount = product.reviews.length;
+      const totalRating = product.reviews.reduce((sum, review) => sum + review.reviewStars, 0);
+      avgRating = totalRating / reviewsCount;
+    }
+    
+    // Add rating data to response
+    const productWithRatings = product.toObject();
+    productWithRatings.avgRating = avgRating;
+    productWithRatings.reviewsCount = reviewsCount;
+      
+    res.status(200).json({
+      success: true,
+      message: "Product fetched successfully by ID",
+      product: productWithRatings,
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: "Error fetching product by ID",
+      error: error.message
+    });
+  }
+};
+
 export const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -210,22 +278,16 @@ export const updateProduct = async (req, res) => {
     
     // Handle image updates if files are provided
     if (req.files) {
-      // Update frontImage if provided
-      if (req.files.frontImage) {
-        // Delete old image if it exists
-        if (product.frontImage && fs.existsSync(product.frontImage)) {
-          fs.unlinkSync(product.frontImage);
-        }
-        updateData.frontImage = req.files.frontImage[0].path;
+      // Update images if provided
+      if (req.files.images && req.files.images.length > 0) {
+        // Store new image filenames
+        updateData.images = req.files.images.map(file => file.filename);
       }
       
-      // Update backImage if provided
-      if (req.files.backImage) {
-        // Delete old image if it exists
-        if (product.backImage && fs.existsSync(product.backImage)) {
-          fs.unlinkSync(product.backImage);
-        }
-        updateData.backImage = req.files.backImage[0].path;
+      // Update videos if provided
+      if (req.files.videos && req.files.videos.length > 0) {
+        // Store new video filenames
+        updateData.videos = req.files.videos.map(file => file.filename);
       }
     }
     
@@ -253,12 +315,23 @@ export const deleteProduct = async (req, res) => {
     }
     
     // Delete associated images
-    if (product.frontImage && fs.existsSync(product.frontImage)) {
-      fs.unlinkSync(product.frontImage);
+    // Delete all associated images and videos
+    if (product.images && product.images.length > 0) {
+      product.images.forEach(image => {
+        const imagePath = path.join(uploadsDir, image);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      });
     }
     
-    if (product.backImage && fs.existsSync(product.backImage)) {
-      fs.unlinkSync(product.backImage);
+    if (product.videos && product.videos.length > 0) {
+      product.videos.forEach(video => {
+        const videoPath = path.join(uploadsDir, video);
+        if (fs.existsSync(videoPath)) {
+          fs.unlinkSync(videoPath);
+        }
+      });
     }
     
     // Delete the product

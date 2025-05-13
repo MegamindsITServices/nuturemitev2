@@ -47,15 +47,21 @@ const OrderSuccess = () => {
           // Payment failed according to PhonePe
           setPaymentStatus('FAILED');
           setError('Payment was not successful. Please try again.');
-        } else {
-          // No phonepeStatus, use the regular verification
+        } else {          // No phonepeStatus, use the regular verification
           const response = await paymentService.verifyPayment(paymentOrderId);
           
           // Check if payment was successful and if an order was created
           if (response.success && response.order) {
             setOrderDetails(response.order);
-            setPaymentStatus('PAID');
-            clearCart(); // Clear cart only on successful payment
+            
+            // Handle Cash on Delivery orders
+            if (response.order.payment?.method === 'Cash on Delivery') {
+              setPaymentStatus('COD_CONFIRMED');
+              clearCart(); // Clear cart for COD orders too
+            } else {
+              setPaymentStatus('PAID');
+              clearCart(); // Clear cart only on successful payment
+            }
           } else {
             // Payment failed or order not created
             setPaymentStatus(response.paymentData?.order_status || 'FAILED');
@@ -111,8 +117,8 @@ const OrderSuccess = () => {
       </div>
     );
   }
-  
-  const isSuccess = paymentStatus === 'PAID';
+    const isSuccess = paymentStatus === 'PAID' || paymentStatus === 'COD_CONFIRMED';
+  const isCod = paymentStatus === 'COD_CONFIRMED';
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
@@ -124,14 +130,27 @@ const OrderSuccess = () => {
         )}
         
         <h1 className="text-3xl font-bold mb-2">
-          {isSuccess ? 'Payment Successful!' : 'Payment Failed'}
+          {isSuccess ? 'Order Confirmed!' : 'Order Failed'}
         </h1>
         
         <p className="text-gray-600 mb-6">
           {isSuccess 
-            ? 'Your order has been placed successfully.' 
-            : 'We could not process your payment. Please try again.'}
+            ? isCod 
+                ? 'Your Cash on Delivery order has been placed successfully.' 
+                : 'Your payment was successful and order has been placed.'
+            : 'We could not process your order. Please try again.'}
         </p>
+        
+        {isCod && (
+          <div className="mb-6 p-4 bg-yellow-50 rounded-md">
+            <h3 className="font-semibold text-yellow-800 mb-1">Cash on Delivery Information</h3>
+            <ul className="text-sm text-yellow-800">
+              <li className="mb-1">• Keep the exact amount ready at the time of delivery</li>
+              <li className="mb-1">• Our delivery partner will collect the payment</li>
+              <li className="mb-1">• Please collect your receipt after payment</li>
+            </ul>
+          </div>
+        )}
         
         {orderId && (
           <div className="bg-gray-50 p-4 rounded-lg mb-6">

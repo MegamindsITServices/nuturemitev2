@@ -31,13 +31,17 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : false,
     },
-    
-    isAdmin:{
+      isAdmin:{
         type : Boolean,
         default : false,
-    },    isUser:{
+    },
+    isUser:{
         type : Boolean,
         default : true,
+    },
+    isBlocked:{
+        type : Boolean,
+        default : false,
     },
     cart: [{
         type: mongoose.Schema.Types.ObjectId,

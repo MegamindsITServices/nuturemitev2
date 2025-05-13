@@ -93,13 +93,27 @@ export const getOrderByDate = async (req, res) => {
 };
 export const createOrder = async (req, res) => {
   try {
-    const { products, buyer, address, phone, payment } = req.body;
+    // Added for debugging on May 13, 2025
+    // Additional validation to ensure totalPrice is always a number
+    if (req.body.totalPrice === undefined || isNaN(req.body.totalPrice)) {
+      console.warn("Invalid totalPrice received:", req.body.totalPrice);
+      console.warn("Request body:", JSON.stringify(req.body, null, 2));
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid total price provided. Must be a number.", 
+        receivedValue: req.body.totalPrice,
+        valueType: typeof req.body.totalPrice
+      });
+    }
+
+    const { products, buyer, address, phone, payment, totalPrice } = req.body;
     const newOrder = new Order({
       products,
       buyer,
       address,
       phone,
       payment,
+      totalPrice: parseFloat(totalPrice), // Ensure totalPrice is a number
     });
     await newOrder.save();
     res.status(201).send({
@@ -109,7 +123,10 @@ export const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating order:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };
 export const updateOrder = async (req, res) => {
