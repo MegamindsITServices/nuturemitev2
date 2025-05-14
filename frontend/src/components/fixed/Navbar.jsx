@@ -1,10 +1,25 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import { ChevronDown, Search, ShoppingCart, User, X, Menu, Home, Package, BookOpen, ShoppingBag } from "lucide-react";
+import {
+  ChevronDown,
+  Search,
+  ShoppingCart,
+  User,
+  X,
+  Menu,
+  Home,
+  Package,
+  BookOpen,
+  ShoppingBag,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import { backendURL, GET_COLLECTION, GET_PRODUCT_BY_SEARCH } from "../../lib/api-client";
+import {
+  backendURL,
+  GET_COLLECTION,
+  GET_PRODUCT_BY_SEARCH,
+} from "../../lib/api-client";
 import { axiosInstance, getConfig } from "../../utils/request";
 
 // Main hover dropdown component
@@ -41,7 +56,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef(null);
-  
+
   // Fetch collections for dropdown
   const fetchCollections = async () => {
     try {
@@ -54,27 +69,29 @@ const Navbar = () => {
       console.error("Error fetching collections:", error);
     }
   };
-    // Handle search by collection
+  // Handle search by collection
   const searchByCollections = (collectionId, collectionName) => {
-    navigate(`/products/collections/${collectionId}`, { 
-      state: { collectionName } 
+    navigate(`/products/collections/${collectionId}`, {
+      state: { collectionName },
     });
     setShowSearchResults(false);
   };
-    // Handle search input change with debounce
+  // Handle search input change with debounce
   const handleSearchChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (query.trim().length < 2) {
       setSearchResults([]);
       setShowSearchResults(false);
       return;
     }
-    
+
     try {
       await getConfig();
-      const response = await axiosInstance.get(`${GET_PRODUCT_BY_SEARCH}?keyword=${query}`);
+      const response = await axiosInstance.get(
+        `${GET_PRODUCT_BY_SEARCH}?keyword=${query}`
+      );
       if (response.data.success) {
         setSearchResults(response.data.products || []);
         setShowSearchResults(true);
@@ -83,7 +100,7 @@ const Navbar = () => {
       console.error("Error searching products:", error);
     }
   };
-  
+
   // Handle search form submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -92,7 +109,7 @@ const Navbar = () => {
       setShowSearchResults(false);
     }
   };
-    // Handle search by price
+  // Handle search by price
   const searchByPrice = (minPrice, maxPrice) => {
     navigate(`/search/price?min=${minPrice}&max=${maxPrice}`);
     setShowSearchResults(false);
@@ -101,7 +118,7 @@ const Navbar = () => {
   useEffect(() => {
     fetchCollections();
   }, []);
-  
+
   // Click outside to close search results
   useEffect(() => {
     function handleClickOutside(event) {
@@ -109,7 +126,7 @@ const Navbar = () => {
         setShowSearchResults(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -143,9 +160,10 @@ const Navbar = () => {
         !show && "transform -translate-y-full"
       )}
     >
-      <div className="bg-orange-500 text-white text-center text-xs py-0.5 transition-all duration-300">
+      {/* <div className="bg-orange-500 text-white text-center text-xs py-0.5 transition-all duration-300">
         5% off on prepaid orders
-      </div>      <div className="bg-white shadow-md transition-all duration-300">
+      </div>{" "} */}
+      <div className="bg-white shadow-md transition-all duration-300">
         <div className="container mx-auto">
           <div
             className={clsx(
@@ -154,13 +172,13 @@ const Navbar = () => {
             )}
           >
             {/* Mobile Menu Button */}
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden flex items-center justify-center p-2 text-gray-700 hover:text-orange-500 transition-colors"
             >
               <Menu size={20} />
             </button>
-            
+
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link to="/">
@@ -171,63 +189,87 @@ const Navbar = () => {
                 />
               </Link>
             </div>
-            
+
             {/* Search - Desktop (when scrolled) & Tablet */}
-            {scrolled ? (              <div className="relative hidden md:block flex-grow max-w-xl mx-4" ref={searchRef}>
-                <form onSubmit={handleSearchSubmit} className="flex border rounded-full overflow-hidden w-full">
+            {scrolled ? (
+              <div
+                className="relative hidden md:block flex-grow max-w-xl mx-4"
+                ref={searchRef}
+              >
+                <form
+                  onSubmit={handleSearchSubmit}
+                  className="flex border rounded-full overflow-hidden w-full"
+                >
                   <input
                     placeholder="Search products..."
                     className="px-3 py-1.5 w-full focus:outline-none text-sm"
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    onFocus={() => searchQuery.trim().length >= 2 && setShowSearchResults(true)}
+                    onFocus={() =>
+                      searchQuery.trim().length >= 2 &&
+                      setShowSearchResults(true)
+                    }
                   />
-                  <button type="submit" className="px-3 text-gray-500 hover:text-black">
-                    <Search size={14} />                  </button>
+                  <button
+                    type="submit"
+                    className="px-3 text-gray-500 hover:text-black"
+                  >
+                    <Search size={14} />{" "}
+                  </button>
                 </form>
-                
+
                 {/* Search results dropdown */}
                 {showSearchResults && searchResults.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-50 max-h-[60vh] overflow-y-auto">
                     <div className="flex justify-between items-center px-3 py-2 border-b">
                       <p className="text-sm font-medium">Search Results</p>
-                      <button 
-                        className="p-1 hover:bg-gray-100 rounded-full" 
+                      <button
+                        className="p-1 hover:bg-gray-100 rounded-full"
                         onClick={() => setShowSearchResults(false)}
                       >
                         <X size={14} />
                       </button>
                     </div>
                     <div className="py-2">
-                      {searchResults.map(product => (
-                        <Link 
-                          key={product._id} 
+                      {searchResults.map((product) => (
+                        <Link
+                          key={product._id}
                           to={`/products/${product._id}`}
                           className="flex items-center px-3 py-2 hover:bg-gray-50"
                           onClick={() => setShowSearchResults(false)}
                         >
                           {product.images && product.images[0] ? (
-                            <img 
-                              src={`${backendURL}/image/${product.images[0]}`} 
-                              alt={product.name} 
+                            <img
+                              src={`${backendURL}/image/${product.images[0]}`}
+                              alt={product.name}
                               className="w-10 h-10 object-cover rounded mr-3"
                             />
                           ) : (
                             <div className="w-10 h-10 bg-gray-200 rounded mr-3 flex items-center justify-center">
-                              <span className="text-xs text-gray-500">No img</span>
+                              <span className="text-xs text-gray-500">
+                                No img
+                              </span>
                             </div>
                           )}
                           <div>
-                            <p className="text-sm font-medium text-gray-800">{product.name}</p>
-                            <p className="text-xs text-gray-500">₹{product.price}</p>
+                            <p className="text-sm font-medium text-gray-800">
+                              {product.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ₹{product.price}
+                            </p>
                           </div>
                         </Link>
                       ))}
                     </div>
                     <div className="border-t px-3 py-2">
-                      <button 
+                      <button
                         onClick={() => {
-                          navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                          navigate(
+                            `/search?q=${encodeURIComponent(
+                              searchQuery.trim()
+                            )}`
+                          );
                           setShowSearchResults(false);
                         }}
                         className="text-sm text-orange-500 hover:underline w-full text-center"
@@ -241,73 +283,86 @@ const Navbar = () => {
             ) : (
               <div className="hidden sm:block"></div>
             )}
-            
+
             {/* Right Icons */}
             <div className="flex gap-5 items-center justify-end px-4">
               {!scrolled && (
                 <div className="relative" ref={searchRef}>
-                  <form 
-                    onSubmit={handleSearchSubmit} 
+                  <form
+                    onSubmit={handleSearchSubmit}
                     className="flex items-center"
                   >
-                    <input 
+                    <input
                       type="text"
                       placeholder="Search..."
                       className="border rounded-lg px-3 py-1.5 text-sm w-40 focus:w-60 transition-all focus:outline-none"
                       value={searchQuery}
                       onChange={handleSearchChange}
-                      onFocus={() => searchQuery.trim().length >= 2 && setShowSearchResults(true)}
+                      onFocus={() =>
+                        searchQuery.trim().length >= 2 &&
+                        setShowSearchResults(true)
+                      }
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="px-2 text-gray-500 hover:text-black"
                     >
                       <Search size={16} />
                     </button>
                   </form>
-                  
+
                   {/* Search results dropdown for non-scrolled state */}
                   {showSearchResults && searchResults.length > 0 && (
                     <div className="absolute top-full right-0 mt-1 bg-white rounded-md shadow-lg z-50 max-h-[60vh] overflow-y-auto w-72">
                       <div className="flex justify-between items-center px-3 py-2 border-b">
                         <p className="text-sm font-medium">Search Results</p>
-                        <button 
-                          className="p-1 hover:bg-gray-100 rounded-full" 
+                        <button
+                          className="p-1 hover:bg-gray-100 rounded-full"
                           onClick={() => setShowSearchResults(false)}
                         >
                           <X size={14} />
                         </button>
                       </div>
                       <div className="py-2">
-                        {searchResults.map(product => (
-                          <Link 
-                            key={product._id} 
+                        {searchResults.map((product) => (
+                          <Link
+                            key={product._id}
                             to={`/products/${product._id}`}
                             className="flex items-center px-3 py-2 hover:bg-gray-50"
                             onClick={() => setShowSearchResults(false)}
                           >
                             {product.images && product.images[0] ? (
-                              <img 
-                                src={`${backendURL}/image/${product.images[0]}`} 
-                                alt={product.name} 
+                              <img
+                                src={`${backendURL}/image/${product.images[0]}`}
+                                alt={product.name}
                                 className="w-10 h-10 object-cover rounded mr-3"
                               />
                             ) : (
                               <div className="w-10 h-10 bg-gray-200 rounded mr-3 flex items-center justify-center">
-                                <span className="text-xs text-gray-500">No img</span>
+                                <span className="text-xs text-gray-500">
+                                  No img
+                                </span>
                               </div>
                             )}
                             <div>
-                              <p className="text-sm font-medium text-gray-800">{product.name}</p>
-                              <p className="text-xs text-gray-500">₹{product.price}</p>
+                              <p className="text-sm font-medium text-gray-800">
+                                {product.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                ₹{product.price}
+                              </p>
                             </div>
                           </Link>
                         ))}
                       </div>
                       <div className="border-t px-3 py-2">
-                        <button 
+                        <button
                           onClick={() => {
-                            navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                            navigate(
+                              `/search?q=${encodeURIComponent(
+                                searchQuery.trim()
+                              )}`
+                            );
                             setShowSearchResults(false);
                           }}
                           className="text-sm text-orange-500 hover:underline w-full text-center"
@@ -319,27 +374,33 @@ const Navbar = () => {
                   )}
                 </div>
               )}
-              
+
               {/* User dropdown with admin link */}
               <HoverDropdown
                 trigger={
-                  <div className="cursor-pointer hover:text-[#ed6663] transition-colors flex items-center gap-1">                    {auth?.user ? (
+                  <div className="cursor-pointer hover:text-[#ed6663] transition-colors flex items-center gap-1">
+                    {" "}
+                    {auth?.user ? (
                       <>
                         {auth.user.image ? (
                           <img
-                            src={auth.user.image.startsWith('http') 
-                              ? auth.user.image 
-                              : `${backendURL}/profile/${auth.user.image}`}
+                            src={
+                              auth.user.image.startsWith("http")
+                                ? auth.user.image
+                                : `${backendURL}/profile/${auth.user.image}`
+                            }
                             alt={auth.user.firstName}
                             className="w-8 h-8 rounded-full object-cover border border-gray-200"
                           />
                         ) : (
                           <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium">
-                            {auth.user.firstName ? auth.user.firstName.charAt(0).toUpperCase() : 'U'}
+                            {auth.user.firstName
+                              ? auth.user.firstName.charAt(0).toUpperCase()
+                              : "U"}
                           </div>
                         )}
                         <span className="text-sm font-medium hidden md:inline">
-                          {auth.user.firstName || auth.user.email.split('@')[0]}
+                          {auth.user.firstName || auth.user.email.split("@")[0]}
                         </span>
                       </>
                     ) : (
@@ -418,25 +479,46 @@ const Navbar = () => {
           <Link to="/" className="hover:text-opacity-80 transition-opacity">
             HOME
           </Link>
-          <Link to="/products" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/products"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             PRODUCTS
           </Link>
-           <Link to="/deals" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/deals"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             DEALS
           </Link>
-          <Link to="/for-business" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/for-business"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             FOR BUSINESS
           </Link>
-           <Link to="/about" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/about"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             ABOUT US
           </Link>
-           <Link to="/contact" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/contact"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             CONTACT US
           </Link>
-           <Link to="/blogs" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/blogs"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             BLOGS
           </Link>
-          <Link to="/Competitions" className="hover:text-opacity-80 transition-opacity">
+          <Link
+            to="/Competitions"
+            className="hover:text-opacity-80 transition-opacity"
+          >
             COMPETITIONS
           </Link>
           {/* <HoverDropdown
@@ -462,7 +544,7 @@ const Navbar = () => {
               )}
             </div>
           </HoverDropdown> */}
-          
+
           {/* <HoverDropdown
             trigger={
               <div className="flex items-center gap-1 hover:text-opacity-80 transition-opacity">
@@ -516,7 +598,7 @@ const Navbar = () => {
               )}
             </div>
           </HoverDropdown> */}
-          
+
           {/* <Link
             to="/combos"
             className="hover:text-opacity-80 transition-opacity"
@@ -541,17 +623,17 @@ const Navbar = () => {
           <div className="lg:hidden bg-white border-t border-gray-100 shadow-md">
             <div className="container mx-auto px-4 py-3">
               <div className="flex flex-col space-y-3">
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Home size={18} />
                   <span>Home</span>
                 </Link>
-                
+
                 <div className="border-b"></div>
-                
+
                 <div className="py-2 px-3">
                   <div className="font-medium mb-2">Categories</div>
                   <div className="pl-2 flex flex-col space-y-2">
@@ -578,33 +660,33 @@ const Navbar = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="border-b"></div>
-                
-                <Link 
-                  to="/combos" 
+
+                <Link
+                  to="/combos"
                   className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Package size={18} />
                   <span>Combos</span>
                 </Link>
-                
-                <Link 
-                  to="/blogs" 
+
+                <Link
+                  to="/blogs"
                   className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <BookOpen size={18} />
                   <span>Blogs</span>
                 </Link>
-                
+
                 <div className="border-b"></div>
-                
+
                 {!auth?.user ? (
                   <>
-                    <Link 
-                      to="/login" 
+                    <Link
+                      to="/login"
                       className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -614,26 +696,26 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    <Link 
-                      to="/user/profile" 
+                    <Link
+                      to="/user/profile"
                       className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <User size={18} />
                       <span>My Profile</span>
                     </Link>
-                    
+
                     {auth.user.isAdmin && (
-                      <Link 
-                        to="/admin/dashboard" 
+                      <Link
+                        to="/admin/dashboard"
                         className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <span>Admin Dashboard</span>
                       </Link>
                     )}
-                    
-                    <button 
+
+                    <button
                       onClick={() => {
                         logout();
                         setMobileMenuOpen(false);
@@ -644,8 +726,8 @@ const Navbar = () => {
                     </button>
                   </>
                 )}
-                
-                <button 
+
+                <button
                   onClick={() => {
                     openCart();
                     setMobileMenuOpen(false);
@@ -660,9 +742,9 @@ const Navbar = () => {
                     </span>
                   )}
                 </button>
-                
+
                 <div className="border-b"></div>
-                
+
                 {/* Mobile search */}
                 <form onSubmit={handleSearchSubmit} className="py-2 px-3">
                   <div className="flex border rounded-md overflow-hidden">
@@ -672,7 +754,10 @@ const Navbar = () => {
                       value={searchQuery}
                       onChange={handleSearchChange}
                     />
-                    <button type="submit" className="px-3 bg-orange-500 text-white">
+                    <button
+                      type="submit"
+                      className="px-3 bg-orange-500 text-white"
+                    >
                       <Search size={16} />
                     </button>
                   </div>
