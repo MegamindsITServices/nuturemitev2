@@ -262,7 +262,7 @@ const features = [
           />
         </section>
         {/* Collections Section with suspense for code splitting */}
-        <section className="container mx-auto py-12 md:py-16 px-4">
+        {/* <section className="container mx-auto py-12 md:py-16 px-4">
           <div className="text-center mb-12">
             <span className="text-orange-500 font-medium mb-2 block">
               CATEGORIES
@@ -325,7 +325,7 @@ const features = [
               </div>
             </div>
           )}
-        </section>
+        </section> */}
 
         {/* Features Section */}
         <section className="reveal-section" data-section="features">
@@ -413,7 +413,7 @@ const features = [
       
 
         {/* NEW: Combo Collections Section */}
-        <section
+        {/* <section
           className="container mx-auto py-12 md:py-16 px-4 reveal-section"
           data-section="combos"
         >
@@ -517,7 +517,7 @@ const features = [
               </>
             )}
           </div>
-        </section>
+        </section> */}
 
         {/* Blog Carousel */}
         {/* <section

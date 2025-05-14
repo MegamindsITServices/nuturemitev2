@@ -418,7 +418,28 @@ const Navbar = () => {
           <Link to="/" className="hover:text-opacity-80 transition-opacity">
             HOME
           </Link>
-          <HoverDropdown
+          <Link to="/products" className="hover:text-opacity-80 transition-opacity">
+            PRODUCTS
+          </Link>
+           <Link to="/deals" className="hover:text-opacity-80 transition-opacity">
+            DEALS
+          </Link>
+          <Link to="/for-business" className="hover:text-opacity-80 transition-opacity">
+            FOR BUSINESS
+          </Link>
+           <Link to="/about" className="hover:text-opacity-80 transition-opacity">
+            ABOUT US
+          </Link>
+           <Link to="/contact" className="hover:text-opacity-80 transition-opacity">
+            CONTACT US
+          </Link>
+           <Link to="/blogs" className="hover:text-opacity-80 transition-opacity">
+            BLOGS
+          </Link>
+          <Link to="/Competitions" className="hover:text-opacity-80 transition-opacity">
+            COMPETITIONS
+          </Link>
+          {/* <HoverDropdown
             trigger={
               <div className="flex items-center gap-1 hover:text-opacity-80 transition-opacity">
                 Category <ChevronDown size={12} />
@@ -440,9 +461,9 @@ const Navbar = () => {
                 <div className="text-gray-500 px-3 py-2 text-sm">No categories found</div>
               )}
             </div>
-          </HoverDropdown>
+          </HoverDropdown> */}
           
-          <HoverDropdown
+          {/* <HoverDropdown
             trigger={
               <div className="flex items-center gap-1 hover:text-opacity-80 transition-opacity">
                 SEARCH BY <ChevronDown size={12} />
@@ -494,15 +515,15 @@ const Navbar = () => {
                 </Link>
               )}
             </div>
-          </HoverDropdown>
+          </HoverDropdown> */}
           
-          <Link
+          {/* <Link
             to="/combos"
             className="hover:text-opacity-80 transition-opacity"
           >
             COMBOS
-          </Link>
-          <div className="flex items-center gap-1">
+          </Link> */}
+          {/* <div className="flex items-center gap-1">
             <Link
               to="/blogs"
               className="hover:text-opacity-80 transition-opacity"
@@ -512,7 +533,7 @@ const Navbar = () => {
             <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">
               NEW
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* Mobile Menu - Slide down when open */}

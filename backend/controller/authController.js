@@ -143,7 +143,7 @@ export const googleAuthSuccess = (req, res) => {
     // The frontend will extract this and store it
     res.redirect(
       `${
-        process.env.CLIENT_URL || "https://nuturemite-blue.vercel.app"
+        process.env.CLIENT_URL || "https://nuturemite.info"
       }/auth/google/callback?token=${token}&userData=${encodeURIComponent(JSON.stringify(userData))}`
     );
   } catch (error) {
