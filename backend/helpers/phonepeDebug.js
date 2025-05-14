@@ -37,9 +37,9 @@ export const testPhonePeV1Api = async () => {
       merchantId: merchantId,
       merchantTransactionId: orderId,
       amount: 100, // 1 rupee in paise
-      redirectUrl: "https://nuturemite-server.onrender.com/api/payment/return", 
+      redirectUrl: "https://nuturemite.info/api/payment/return", 
       redirectMode: "REDIRECT",
-      callbackUrl: "https://nuturemite-server.onrender.com/api/payment/webhook",
+      callbackUrl: "https://nuturemite.info/api/payment/webhook",
       paymentInstrument: {
         type: "PAY_PAGE",
       },
@@ -107,7 +107,7 @@ export const testPhonePeV2UiCheckout = async () => {
     const checkoutUrl = isProduction ? uiCheckoutProductionUrl : uiCheckoutTestUrl;
     
     // Construct the URL with query parameters
-    const fullUrl = `${checkoutUrl}?merchId=${merchantId}&transactionId=${orderId}&amt=100&redirectUrl=https://nuturemite-server.onrender.com/api/payment/return`;
+    const fullUrl = `${checkoutUrl}?merchId=${merchantId}&transactionId=${orderId}&amt=100&redirectUrl=https://api.nuturemite.info/api/payment/return`;
     
     console.log("PhonePe V2 UI Checkout URL:", fullUrl);
     

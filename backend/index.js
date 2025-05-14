@@ -46,7 +46,7 @@ const allowedOrigins = [
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.ORIGIN || "http://localhost:5173 || https://nuturemite-blue.vercel.app",
+    origin: process.env.ORIGIN || "http://localhost:5173 || https://nuturemite.info",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
