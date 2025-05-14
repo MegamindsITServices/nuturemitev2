@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import { backendURL } from '../../lib/api-client';
-import paymentService from '../../services/paymentService';
+import { paymentService } from '../../services/paymentService';
 
 const Checkout = () => {
   const [auth] = useAuth();
@@ -35,19 +35,21 @@ const Checkout = () => {
     email: auth?.user?.email || '',
     phone: '',
   });
-    // Payment state
+  // Payment state
   const [paymentSessionId, setPaymentSessionId] = useState('');
   const [orderId, setOrderId] = useState('');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [response, setResponse] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('online');
+
   
   // Calculate subtotal, shipping, and taxes
   const subtotal = cartTotal;
-  // const shipping = subtotal > 0 ? (subtotal > 1000 ? 0 : 99) : 0;
+  // Apply shipping fee for orders below Rs. 600
+  const shipping = subtotal > 0 ? (subtotal >= 600 ? 0 : 50) : 0;
   // const tax = subtotal * 0.18; // 18% GST
-  const shipping = 0;
   const tax = 0
   const totalAmount = subtotal + shipping + tax;
   
@@ -100,7 +102,7 @@ const Checkout = () => {
       });
     }
   };
-    // Initialize Cashfree payment
+  // Initialize payment
   const initializePayment = async () => {
     if (!validateForm()) {
       toast.error('Please fill in all required fields');
@@ -132,15 +134,66 @@ const Checkout = () => {
         name: shippingAddress.fullName,
         email: contactInfo.email,
         phone: contactInfo.phone
-      };
-        // Create payment
+      };      // Handle Cash on Delivery orders
+      if (paymentMethod === 'cod') {
+        try {
+          // Create a direct order without payment processing
+          const orderData = {
+            products: cartItems.map(item => item.productId),
+            buyer: auth.user.userId,
+            address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
+            phone: contactInfo.phone,
+            totalPrice: parseFloat(totalAmount), // Ensure totalPrice is a number
+            payment: {
+              method: 'Cash on Delivery',
+              status: 'Pending'
+            }
+          };
+            console.log('Sending COD order data:', orderData);
+          const response = await paymentService.createCodOrder(orderData);
+          
+          if (response.success) {
+            // Clear cart and redirect to success page
+            await paymentService.clearCart(auth.user.userId);
+            toast.success('Order placed successfully!');
+            navigate(`/order-success/${response.order._id}`);
+          } else {
+            throw new Error(response.message || 'Failed to create order');
+          }
+          return;        } catch (error) {          console.error('COD Order error:', error);
+          
+          // Better error handling with detailed logging
+          const errorResponse = error.response?.data;
+          console.log('Error details:', errorResponse);
+          
+          // If error response has details from backend
+          const errorMsg = errorResponse?.error || error.message || 'Failed to process order';
+          const detailsMsg = errorResponse?.details ? 
+            errorResponse.details.map(d => `${d.field}: ${d.message}`).join(', ') : '';
+          
+          // Show more specific error message for totalPrice validation
+          if (error.message?.includes('totalPrice') || errorMsg?.includes('totalPrice')) {
+            toast.error('Error with order total: Please try again');
+            setPaymentError('There was an issue with the order amount. Please try again or contact support.');
+          } else {
+            toast.error(`${errorMsg} ${detailsMsg ? `- ${detailsMsg}` : ''}`);
+            setPaymentError(`Order creation failed: ${errorMsg} ${detailsMsg ? `- ${detailsMsg}` : ''}`);
+          }
+          return;
+        }finally {
+          setIsProcessing(false);
+        }
+      }
+
+      // For online payment
       const paymentResponse = await paymentService.createPayment(
         cartItems,
         customerInfo,
         totalAmount,
         shippingAddress
       );
-        if (paymentResponse.success) {
+      
+      if (paymentResponse.success) {
         console.log('Payment response:', paymentResponse);
         setPaymentSessionId(paymentResponse.payment_session_id);
         setOrderId(paymentResponse.order_id);
@@ -431,30 +484,49 @@ const Checkout = () => {
             
             <div className="space-y-3">
               <div className="border rounded-md p-4 flex items-start">
-                <input type="radio" id="online" name="payment" className="mt-1" defaultChecked />
-                <label htmlFor="online" className="ml-3 flex-1">
+                <input 
+                  type="radio" 
+                  id="online" 
+                  name="payment" 
+                  className="mt-1" 
+                  checked={paymentMethod === 'online'}
+                  onChange={() => setPaymentMethod('online')}
+                />                <label htmlFor="online" className="ml-3 flex-1 cursor-pointer" onClick={() => setPaymentMethod('online')}>
                   <div className="flex justify-between">
                     <div className="flex items-center">
                       <CreditCard size={20} className="mr-2 text-gray-600" />
                       <span className="font-medium">Online Payment (PhonePe)</span>
                     </div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay securely with UPI, Credit/Debit Card, or Wallet</p>
                 </label>
               </div>
-              
-              <div className="border rounded-md p-4 flex items-start text-gray-400 bg-gray-50">
-                <input type="radio" id="cod" name="payment" className="mt-1" disabled />
-                <label htmlFor="cod" className="ml-3 flex-1">
+                <div className="border rounded-md p-4 flex items-start">
+                <input 
+                  type="radio" 
+                  id="cod" 
+                  name="payment" 
+                  className="mt-1" 
+                  checked={paymentMethod === 'cod'}
+                  onChange={() => setPaymentMethod('cod')}
+                />                <label htmlFor="cod" className="ml-3 flex-1 cursor-pointer" onClick={() => setPaymentMethod('cod')}>
                   <div className="flex justify-between">
                     <div className="flex items-center">
-                      <CreditCard size={20} className="mr-2" />
+                      <Truck size={20} className="mr-2 text-gray-600" />
                       <span className="font-medium">Cash on Delivery</span>
                     </div>
-                    <div className="text-xs">Currently unavailable</div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay in cash when your order is delivered</p>
                 </label>
               </div>
             </div>
+            
+            {paymentMethod === 'cod' && (
+                <div className="mt-2 p-2 bg-yellow-50 text-yellow-800 text-sm rounded-md">
+                  <p>Note: Cash on Delivery orders require payment at the time of delivery.</p>
+                </div>
+              )}
+              
               {/* Payment form container - redirection message for PhonePe */}
             {showPaymentForm && (
               <div id="payment-form" className="mt-6 border rounded-lg p-4">
@@ -488,15 +560,51 @@ const Checkout = () => {
                 <span>Price ({cart.length} items)</span>
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
-              
-              <div className="flex justify-between pb-3">
+                <div className="flex justify-between pb-3">
                 <span>Shipping Fee</span>
                 {shipping > 0 ? (
                   <span>₹{shipping.toFixed(2)}</span>
                 ) : (
-                  <span className="text-green-600 font-medium">Free</span>
+                  <span className="text-green-600 font-medium">Free Shipping</span>
                 )}
               </div>
+              
+              <div className="bg-green-50 border border-green-100 p-2 rounded-md mb-3">
+                <div className="flex items-center text-xs text-green-700">
+                  <Truck size={14} className="mr-1" />
+                  <span className="font-medium">Shipping Policy</span>
+                </div>
+                <ul className="text-xs text-green-700 mt-1 pl-5 list-disc">
+                  <li>Free shipping on all orders above ₹600</li>
+                  <li>₹50 shipping fee for orders below ₹600</li>
+                  <li>Delivery typically within 3-5 business days</li>
+                </ul>
+              </div>
+              
+              {subtotal < 600 && subtotal > 0 && (
+                <div className="mt-2 mb-3">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Progress to free shipping</span>
+                    <span>₹{subtotal.toFixed(2)} of ₹600</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-green-500 h-2.5 rounded-full" 
+                      style={{ width: `${Math.min(100, (subtotal / 600) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Add ₹{(600 - subtotal).toFixed(2)} more to get free shipping
+                  </p>
+                </div>
+              )}
+              
+              {subtotal >= 600 && (
+                <div className="flex items-center bg-green-50 text-green-700 p-2 rounded-md mb-3 text-sm">
+                  <CheckCircle size={16} className="mr-1" />
+                  <span>You've qualified for free shipping!</span>
+                </div>
+              )}
               
               <div className="flex justify-between pb-3">
                 <span>GST (18%)</span>
@@ -513,18 +621,18 @@ const Checkout = () => {
                 <span>You'll save ₹{(subtotal * 0.05).toFixed(2)} with prepaid order</span>
               </div>
             </div>
-            
-            <div className="mt-6 space-y-3">
-              <button 
+              <div className="mt-6 space-y-3">              <button 
                 onClick={initializePayment}
                 disabled={isProcessing || showPaymentForm}
                 className={`w-full py-3 rounded-md font-medium ${
                   isProcessing || showPaymentForm 
                     ? 'bg-orange-300 cursor-not-allowed' 
-                    : 'bg-orange-500 hover:bg-orange-600 text-white'
+                    : paymentMethod === 'cod'
+                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                      : 'bg-orange-500 hover:bg-orange-600 text-white'
                 }`}
               >
-                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+                {isProcessing ? 'Processing...' : paymentMethod === 'cod' ? 'Place Cash on Delivery Order' : 'Proceed to Online Payment'}
               </button>
               <button 
                 onClick={() => navigate('/')}
@@ -540,6 +648,33 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      
+      <div className="mt-4 border-t pt-4">
+                <div className="flex items-center">
+                  <ShieldCheck size={18} className="text-green-600 mr-2" />
+                  <span className="text-xs text-gray-600">All transactions are secure and encrypted.</span>
+                </div>
+                
+                {paymentMethod === 'online' ? (
+                  <div className="text-xs text-gray-600 mt-2 bg-blue-50 p-2 rounded">
+                    <p className="font-medium text-blue-700">Online Payment Benefits:</p>
+                    <ul className="list-disc pl-4 mt-1 text-blue-700">
+                      <li>Fast and secure transaction</li>
+                      <li>Instant order confirmation</li>
+                      <li>Save 5% on your order value</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-600 mt-2 bg-yellow-50 p-2 rounded">
+                    <p className="font-medium text-yellow-700">Cash on Delivery Information:</p>
+                    <ul className="list-disc pl-4 mt-1 text-yellow-700">
+                      <li>Pay when your order arrives</li>
+                      <li>Please keep the exact amount ready</li>
+                      <li>We accept cash only for COD orders</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, googleAuthSuccess, getCurrentUser, signup } from '../controller/authController.js';
+import { login, googleAuthSuccess, getCurrentUser, signup, addAdmin, GetAdmins, UpdateAdmin } from '../controller/authController.js';
 import { verifyGoogleToken } from '../controller/googleAuthController.js';
 import passport from '../config/passport.js';
 import multer from 'multer';
@@ -33,6 +33,10 @@ const authRoute = express.Router();
 // Email & password login
 authRoute.post('/login', login);
 authRoute.post('/signup', upload.single('image'), signup);
+authRoute.post("/add-admin", requireSignIn, isAdmin, addAdmin)
+authRoute.post("/get-admins", requireSignIn, isAdmin, GetAdmins)
+authRoute.put("/update-admin/:id", requireSignIn, isAdmin, UpdateAdmin)
+
 // Google OAuth routes
 authRoute.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 

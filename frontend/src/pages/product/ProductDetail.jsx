@@ -183,10 +183,10 @@ const ProductDetail = () => {  const [product, setProduct] = useState();
           </li>
         </ul>
       </div>{" "}
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-1/2">
+      <div className="flex flex-col lg:flex-row gap-8">        <div className="w-full lg:w-1/2">
           <ProductImageGallery
             images={product.images || []}
+            videos={product.videos || []}
             productName={product.name || "Product"}
           />
         </div>
