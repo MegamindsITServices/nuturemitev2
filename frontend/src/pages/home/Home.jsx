@@ -253,7 +253,7 @@ const features = [
     <>
       <div className="flex flex-col min-h-screen">
         <section className="relative w-full">
-          {/* Carousel component with proper height on different devices */}
+        
           <Carousel
             images={carouselImages}
             interval={5000}
@@ -409,43 +409,8 @@ const features = [
           </div>
         </section>
 
-        {/* Eat Anytime Section */}
-        <section className="w-full bg-[#e9bd0c] py-12 md:py-16">
-          <div className="max-w-6xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-            {/* Text Content - Always on the left */}
-            <div className="md:w-1/2 mb-8 md:mb-0 text-left">
-              <h3 className="text-gray-800 text-lg font-medium mb-2 animate-in slide-in-from-left-5 duration-500">
-                YOU HAVE OUR PERMISSION TO
-              </h3>
-              <h2 className="text-brown-800 text-4xl md:text-5xl font-bold mb-4 animate-in slide-in-from-left-5 duration-700 delay-100">
-                Eat Anytime!
-              </h2>
-              <p className="text-gray-800 max-w-md animate-in slide-in-from-left-5 duration-700 delay-200">
-                Its about being mindful and take a balanced approach. We create
-                foods which are healthy and full of taste. Which will make you
-                forget the taste of junk!
-              </p>
-            </div>
-
-            {/* Clock Visualization - Always on the right */}
-            <div className="md:w-1/2 flex justify-center md:justify-end">
-              <div className="relative w-56 h-56 md:w-64 md:h-64 animate-in fade-in-0 zoom-in-95 duration-1000">
-                {/* Clock Face */}
-                <div className="absolute inset-0 bg-amber-100 rounded-full shadow-xl"></div>
-                <div className="absolute inset-4 border-4 border-amber-200 rounded-full"></div>
-
-                {/* Clock Hands - Animated */}
-                <div
-                  className="absolute w-1 h-24 bg-amber-600 top-8 left-1/2 -ml-0.5 origin-bottom transform transition-transform"
-                  style={{
-                    transformOrigin: "bottom center",
-                    transform: `translateX(-50%) rotate(${rotation}deg)`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </section>
+      
+      
 
         {/* NEW: Combo Collections Section */}
         <section
@@ -555,7 +520,7 @@ const features = [
         </section>
 
         {/* Blog Carousel */}
-        <section
+        {/* <section
           className="bg-gray-50 py-12 md:py-16 reveal-section"
           data-section="blogs"
         >
@@ -611,7 +576,7 @@ const features = [
               )}
             </BlogCarousel>
           </div>
-        </section>
+        </section> */}
       </div>
     </>
   );
