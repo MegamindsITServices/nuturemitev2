@@ -1,4 +1,6 @@
-export const backendURL = "http://localhost:8080";
+// Use the production backend URL for the API
+export const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+// In production, this will be: https://api.nuturemite.info
 export const AUTH_ROUTE = 'api/auth';
 export const PRODUCT_ROUTE = 'api/product';
 export const COLLECTION_ROUTE = 'api/collections';

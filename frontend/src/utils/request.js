@@ -1,6 +1,6 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
-    baseURL: "http://localhost:8080" // Default base URL
+    baseURL: "https://api.nuturemite.info" // Default base URL
 });
 
 // Setup axios interceptors to include auth token
@@ -26,6 +26,6 @@ export const getConfig = async () => {
     } catch (error) {
         console.log("Error fetching config:", error);
         // Fall back to default baseURL
-        axiosInstance.defaults.baseURL = "http://localhost:8080";
+        axiosInstance.defaults.baseURL = "https://api.nuturemite.info";
     }
 }

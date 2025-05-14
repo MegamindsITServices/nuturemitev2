@@ -196,7 +196,7 @@ const ViewAllAdmins = () => {
                           {admin.image ? (
                             <img 
                               className="h-10 w-10 rounded-full object-cover" 
-                              src={`http://localhost:8080/profile/${admin.image}`} 
+                              src={`https://api.nuturemite.info/profile/${admin.image}`} 
                               alt={`${admin.firstName} ${admin.lastName}`}
                             />
                           ) : (
