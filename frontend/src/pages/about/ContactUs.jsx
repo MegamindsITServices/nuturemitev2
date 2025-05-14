@@ -8,7 +8,8 @@ import {
   Facebook,
   Twitter,
   Instagram,
-  Linkedin
+  Linkedin,
+  Youtube
 } from 'lucide-react';
 import { 
   Card, 
@@ -21,6 +22,7 @@ import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Button } from '../../components/ui/button';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -121,8 +123,8 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-medium">Email</h3>
-                  <p className="text-gray-600">support@nuturemite.com</p>
-                  <p className="text-gray-600">info@nuturemite.com</p>
+                  <p className="text-gray-600">sales@nuturemite.com</p>
+                 
                 </div>
               </motion.div>
 
@@ -132,8 +134,8 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-medium">Phone</h3>
-                  <p className="text-gray-600">+91 9876543210</p>
-                  <p className="text-gray-600">+91 9876543211</p>
+                  <p className="text-gray-600">+91 7032383232</p>
+                  
                 </div>
               </motion.div>
 
@@ -143,8 +145,8 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-medium">Location</h3>
-                  <p className="text-gray-600">123 Nutrition Street</p>
-                  <p className="text-gray-600">Health District, Wellness City - 400001</p>
+                 
+                  <p className="text-gray-600">H.No:6-264/13/A/15A, Raghavaendra Colony, Quthbullapur Road,Suchitra </p>
                 </div>
               </motion.div>
 
@@ -162,18 +164,22 @@ const ContactUs = () => {
               <motion.div variants={itemVariants} className="pt-4">
                 <h3 className="font-medium mb-3">Connect With Us</h3>
                 <div className="flex space-x-4">
-                  <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                  <Link to={"https://www.facebook.com/Nuturemite"} className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                     <Facebook className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                  </Link>
+                <Link to={"https://www.youtube.com/@Nuturemitehealth"} className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                    <Youtube className="h-5 w-5 text-primary" />
+                  </Link>
+                
+                 
+                  <Link href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                     <Twitter className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
+                  </Link>
+                  <Link to={"https://www.instagram.com/nuturemite_blog/#"} className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
                     <Instagram className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-2 rounded-full hover:bg-primary/20 transition-colors">
-                    <Linkedin className="h-5 w-5 text-primary" />
-                  </a>
+                  </Link>
+                  
+                 
                 </div>
               </motion.div>
             </CardContent>
@@ -285,7 +291,8 @@ const ContactUs = () => {
       >
         <div className="aspect-[16/9] w-full">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.215180885012!2d-73.98509642404005!3d40.75866937127403!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes%20Square!5m2!1s0!2s" 
+          
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d55094.46868517464!2d78.39211821556088!3d17.503426428067637!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb917be1cc4e43%3A0x7531366a010b8a03!2sNuturemite!5e1!3m2!1sen!2sin!4v1747239450279!5m2!1sen!2sin" 
             width="100%" 
             height="100%" 
             style={{ border: 0 }} 
