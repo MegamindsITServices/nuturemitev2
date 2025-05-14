@@ -29,28 +29,28 @@ const databaseUrl = process.env.DATABASE_URL;
 // MERCHANT_ID = "M228EY1054QWH"
 // SALT_INDEX = 1
 // API_KEY = "6867369a-26d1-4748-94de-bdc7a1013bf8"
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://nuturemite-blue.vercel.app",
-  "https://nuturemite-blue.vercel.app/",
-  "http://nuturemite-blue.vercel.app",
-  "https://nuturemite-server.onrender.com",
-  "https://nuturemite-server.onrender.com/",
-  "http://nuturemite-server.onrender.com",
-  "https://nuturemite.info",
-  "https://nuturemite.info/",
-  "http://nuturemite.ingo",
-  undefined,
-];
+
 
 // CORS configuration
-app.use(
-  cors({
-    origin: process.env.ORIGIN || "http://localhost:5173 || https://nuturemite.info",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: process.env.ORIGIN || "http://localhost:5173 || https://nuturemite.info",
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//   })
+// );
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://nuturemite.info",
+  "https://nuturemite.info/",
+  "http://nuturemite.info",
+  "http://localhost:8080",
+  "http://api.nuturemite.info",
+  "https://api.nuturemite.info",
+  "https://api.nuturemite.info/",
+  undefined,
+
+]
 const corsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.includes(origin)) {
@@ -60,11 +60,32 @@ const corsOptions = {
     }
   },
   credentials: true,
+  // Set to true if you want to allow credentials (cookies, authorization headers, etc.)
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With"
+  ]
 };
 // Middleware
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json());
+
+app.use((req,res,next)=>{
+  const origin = req.headers.origin;
+  if(allowedOrigins.includes(origin)){
+     res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    if(req.method === 'OPTIONS'){
+      return res.sendStatus(200);
+    }
+  }
+  next()
+})
 
 // We'll use helper functions to interact with PhonePe APIs directly
 // Set up __dirname equivalent in ES modules
@@ -153,8 +174,8 @@ app.post("/api/payment/create", async (req, res) => {  try {
         customer_phone: customerInfo.phone
       },
       order_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/order-success/${orderId}?order_id={order_id}`,
-        notify_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payment/webhook`,
+        return_url: `${process.env.FRONTEND_URL || 'https//nuturemite.info'}/order-success/${orderId}?order_id={order_id}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://api.nuturemite.info'}/api/payment/webhook`,
         // Add necessary order data as metadata
         product_ids: cartItems.map(item => item.productId || item._id).join(','),
         product_names: cartItems.map(item => item.name).join(', '),
