@@ -60,6 +60,7 @@ const corsOptions = {
     }
   },
   credentials: true,
+  // Set to true if you want to allow credentials (cookies, authorization headers, etc.)
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
