@@ -14,7 +14,7 @@ import {
   Loader2
 } from 'lucide-react';
 import Breadcrumb from '../../components/common/Breadcrumb';
-import { backendURL } from '../../lib/api-client';
+import { getProductImageUrl } from '../../utils/imageUtils';
 import { paymentService } from '../../services/paymentService';
 
 const Checkout = () => {
@@ -315,9 +315,8 @@ const Checkout = () => {
               {cart.map((item) => (
                 <div key={item._id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4">
                   <div className="flex items-center">
-                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border">
-                      <img 
-                        src={item.images && item.images.length > 0 ? `${backendURL}/image/${item.images[0]}` : ''} 
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border">                      <img 
+                        src={item.images && item.images.length > 0 ? getProductImageUrl(item.images[0]) : ''} 
                         alt={item.name}
                         className="h-full w-full object-cover object-center"
                       />

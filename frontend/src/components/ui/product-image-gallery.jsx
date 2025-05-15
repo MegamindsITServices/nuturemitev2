@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { Button } from "./button";
-import { backendURL } from "../../lib/api-client";
+import { getProductImageUrl } from "../../utils/imageUtils";
 
 const ProductImageGallery = ({ images, videos, productName }) => {
   const [selectedMedia, setSelectedMedia] = useState({
@@ -72,7 +72,7 @@ const ProductImageGallery = ({ images, videos, productName }) => {
                 whileTap={{ scale: 0.95 }}
               >
                 <img
-                  src={`${backendURL}/image/${image}`}
+                  src={getProductImageUrl(image)}
                   alt={`${productName} - thumbnail ${index + 1}`}
                   className="w-20 h-20 object-cover"
                 />
@@ -118,7 +118,7 @@ const ProductImageGallery = ({ images, videos, productName }) => {
                 className="relative aspect-square bg-gray-50"
               >
                 <img
-                  src={`${backendURL}/image/${images[selectedMedia.index]}`}
+                  src={getProductImageUrl(images[selectedMedia.index])}
                   alt={productName}
                   className="w-full h-full object-contain"
                 />

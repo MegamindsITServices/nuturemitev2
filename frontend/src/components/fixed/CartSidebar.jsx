@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { backendURL } from '../../lib/api-client';
+import { getProductImageUrl } from '../../utils/imageUtils';
 
 const CartSidebar = () => {
   const { 
@@ -56,10 +56,9 @@ const CartSidebar = () => {
             <div className="space-y-4">
               {cart.map(item => (                <div key={item._id} className="flex border-b pb-4 last:border-b-0 gap-3">
                   {/* Product Image */}
-                  <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden">
-                    <img 
+                  <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden">                    <img 
                       src={item.images && item.images.length > 0 
-                        ? `${backendURL}/image/${item.images[0]}`
+                        ? getProductImageUrl(item.images[0])
                         : (item.image || '/images/logo.png')} 
                       alt={item.name} 
                       className="w-full h-full object-cover"
