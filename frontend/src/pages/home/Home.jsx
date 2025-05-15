@@ -185,27 +185,27 @@ const Home = () => {
 const features = [
    {
       id: 1,
-      title: "Gluten Free",
+      title: "Millet-Powered Nutrition",
       icon: <Leaf className="h-8 w-8 text-white" />,
     },
     {
       id: 2,
-      title: "No Added Sugar",
+      title: "Tasty Meets Healthy",
       icon: <Cookie className="h-8 w-8 text-white" />,
     },
     {
       id: 3,
-      title: "Anti Oxidant",
+      title: "Tasty Meets Healthy",
       icon: <Atom className="h-8 w-8 text-white" />,
     },
     {
       id: 4,
-      title: "No Transfat",
+      title: "Clean, Conscious Food",
       icon: <Droplet className="h-8 w-8 text-white" />,
     },
     {
       id: 5,
-      title: "No Cholesterol",
+      title: "Rooted in Tradition, Made for Today",
       icon: <Heart className="h-8 w-8 text-white" />,
     },
 ]
