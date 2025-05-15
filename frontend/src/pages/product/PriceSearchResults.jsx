@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { axiosInstance, getConfig } from "../../utils/request";
-import { backendURL, GET_PRODUCT_BY_PRICE } from "../../lib/api-client";
+import { GET_PRODUCT_BY_PRICE } from "../../lib/api-client";
 import { ChevronLeft, ChevronRight, Filter, SlidersHorizontal } from "lucide-react";
+import { getProductImageUrl } from "../../utils/imageUtils";
 
 const PriceSearchResults = () => {
   const location = useLocation();
@@ -171,7 +172,7 @@ const PriceSearchResults = () => {
                   <div className="aspect-square overflow-hidden">
                     {product.images && product.images[0] ? (
                       <img
-                        src={`${backendURL}/image/${product.images[0]}`}
+                        src={getProductImageUrl(product.images[0])}
                         alt={product.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />

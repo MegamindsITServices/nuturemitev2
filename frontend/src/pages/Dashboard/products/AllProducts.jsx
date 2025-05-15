@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit, Trash2, AlertCircle } from "lucide-react";
 import { axiosInstance, getConfig } from "../../../utils/request";
-import { GET_PRODUCTS, DELETE_PRODUCT, backendURL, GET_PRODUCT_BY_ID } from "../../../lib/api-client";
+import { GET_PRODUCTS, DELETE_PRODUCT, GET_PRODUCT_BY_ID } from "../../../lib/api-client";
 import { toast } from "sonner";
 import ProductEditDialog from "../../../components/product/ProductEditDialog";
+import { getProductImageUrl } from "../../../utils/imageUtils";
 
 const AllProducts = () => {
   const [getProducts, setGetProducts] = useState([]);
@@ -127,9 +128,8 @@ const AllProducts = () => {
                   getProducts.map((product) => (
                     <tr key={product._id || product.id} className="hover:bg-gray-50">
                       <td className="py-3 px-4">
-                        {product.images && product.images.length > 0 ? (
-                          <img
-                            src={`${backendURL}/image/${product.images[0]}`}
+                        {product.images && product.images.length > 0 ? (                          <img
+                            src={getProductImageUrl(product.images[0])}
                             alt={product.name}
                             className="w-16 h-16 object-cover rounded"
                           />

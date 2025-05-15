@@ -1,4 +1,8 @@
-export const backendURL = "http://localhost:8080";
+import config from '../config/environment';
+
+// Get backend URL from environment config
+export const backendURL = config.getApiUrl();
+
 export const AUTH_ROUTE = 'api/auth';
 export const PRODUCT_ROUTE = 'api/product';
 export const COLLECTION_ROUTE = 'api/collections';

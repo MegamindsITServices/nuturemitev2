@@ -7,9 +7,11 @@ import BlogCard from "../../components/ui/blog-card";
 import { Atom, Cookie, Droplet, Heart, Leaf } from "lucide-react";
 import { products } from "../../data/products";
 import { blogPosts } from "../../data/blogs"; // Kept for fallback
-import { GET_COLLECTION, GET_PRODUCTS, GET_BLOGS, backendURL, GET_PRODUCTS_BY_COLLECTION } from "../../lib/api-client";
+import { GET_COLLECTION, GET_PRODUCTS, GET_BLOGS, GET_PRODUCTS_BY_COLLECTION } from "../../lib/api-client";
 import { axiosInstance } from "../../utils/request";
 import { Link } from "react-router-dom";
+import { getBannerImageUrl, getCollectionImageUrl, getBlogImageUrl } from "../../utils/imageUtils";
+import BackendUrlTest from "../../components/debug/BackendUrlTest";
 
 // Lazy load the Collections component for better initial load performance
 const Collections = lazy(() => import("../collections/Collections"));
@@ -99,11 +101,10 @@ const Home = () => {
     try {
       const response = await axiosInstance.get('/api/banner/get-banner');
       
-      if (response.data.success && response.data.banners && response.data.banners.length > 0) {
-        // Map banners to the format expected by the carousel component
+      if (response.data.success && response.data.banners && response.data.banners.length > 0) {        // Map banners to the format expected by the carousel component
         const bannerImages = response.data.banners.map((banner, index) => ({
           id: banner._id,
-          image: `${backendURL}/banner/${banner.bannerImage}`,
+          image: getBannerImageUrl(banner.bannerImage),
           alt: `Banner slide ${index + 1}`
         }));
         
@@ -248,12 +249,15 @@ const features = [
         sectionObserver.unobserve(section);
       });
     };
-  }, []);
-  return (
+  }, []);  return (
     <>
       <div className="flex flex-col min-h-screen">
-        <section className="relative w-full">
+        {/* Backend URL debugging - comment out or remove in production */}
+        <div className="container mx-auto px-4 mt-4">
+          <BackendUrlTest />
+        </div>
         
+        <section className="relative w-full">
           <Carousel
             images={carouselImages}
             interval={5000}
@@ -295,9 +299,8 @@ const features = [
                         onClick={() => handleCollectionClick(collection)}
                       >
                         <div className="rounded-full w-32 h-32 bg-orange-100 flex items-center justify-center relative overflow-hidden transition-transform duration-300 hover:scale-110">
-                          {collection.image ? (
-                            <img 
-                              src={`${backendURL}/image/${collection.image}`} 
+                          {collection.image ? (                            <img 
+                              src={getCollectionImageUrl(collection.image)} 
                               alt={collection.name} 
                               className="object-cover w-full h-full"
                               onError={(e) => {
@@ -462,9 +465,8 @@ const features = [
                       >
                         <div className="border rounded-lg overflow-hidden transition-shadow hover:shadow-lg">
                           {collection.image ? (
-                            <div className="h-48 overflow-hidden">
-                              <img 
-                                src={`${backendURL}/collection/${collection.image}`} 
+                            <div className="h-48 overflow-hidden">                              <img 
+                                src={getCollectionImageUrl(collection.image)} 
                                 alt={collection.name}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
@@ -554,9 +556,8 @@ const features = [
                   <BlogCard 
                     key={blog._id || blog.id} 
                     blog={{
-                      ...blog,
-                      // Transform the blog object to match the expected format
-                      image: blog.images ? `${backendURL}/blog/${blog.images.split('/').pop()}` : 'https://placehold.co/600x400/orange/white?text=No+Image',
+                      ...blog,                      // Transform the blog object to match the expected format
+                      image: blog.images ? getBlogImageUrl(blog.images.split('/').pop()) : 'https://placehold.co/600x400/orange/white?text=No+Image',
                       date: blog.createdAt ? new Date(blog.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric', 
                         month: 'short', 

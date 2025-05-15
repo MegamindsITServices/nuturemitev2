@@ -16,10 +16,10 @@ import {
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import {
-  backendURL,
   GET_COLLECTION,
   GET_PRODUCT_BY_SEARCH,
 } from "../../lib/api-client";
+import { getProductImageUrl, getProfileImageUrl } from "../../utils/imageUtils";
 import { axiosInstance, getConfig } from "../../utils/request";
 
 // Main hover dropdown component
@@ -240,7 +240,7 @@ const Navbar = () => {
                         >
                           {product.images && product.images[0] ? (
                             <img
-                              src={`${backendURL}/image/${product.images[0]}`}
+                              src={getProductImageUrl(product.images[0])}
                               alt={product.name}
                               className="w-10 h-10 object-cover rounded mr-3"
                             />
@@ -333,7 +333,7 @@ const Navbar = () => {
                           >
                             {product.images && product.images[0] ? (
                               <img
-                                src={`${backendURL}/image/${product.images[0]}`}
+                                src={getProductImageUrl(product.images[0])}
                                 alt={product.name}
                                 className="w-10 h-10 object-cover rounded mr-3"
                               />

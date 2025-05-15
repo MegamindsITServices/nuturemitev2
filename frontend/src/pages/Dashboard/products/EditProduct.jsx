@@ -21,7 +21,8 @@ import { Button } from "../../../components/ui/button";
 import { axiosInstance, getConfig } from "../../../utils/request";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { GET_COLLECTION, GET_PRODUCT_BY_ID, UPDATE_PRODUCT, backendURL } from "../../../lib/api-client";
+import { GET_COLLECTION, GET_PRODUCT_BY_ID, UPDATE_PRODUCT } from "../../../lib/api-client";
+import { getProductImageUrl, getVideoUrl } from "../../../utils/imageUtils";
 import { Loader } from "lucide-react";
 
 const EditProduct = () => {
@@ -486,9 +487,8 @@ const EditProduct = () => {
                   <h4 className="text-sm font-medium text-slate-600 mb-2">Current Images:</h4>
                   <div className="flex flex-wrap gap-3">
                     {existingImages.map((image, index) => (
-                      <div key={`existing-${index}`} className="relative">
-                        <img
-                          src={`${backendURL}/image/${image}`}
+                      <div key={`existing-${index}`} className="relative">                        <img
+                          src={getProductImageUrl(image)}
                           alt={`Product image ${index + 1}`}
                           className="h-24 w-24 object-cover border rounded"
                         />
@@ -586,9 +586,8 @@ const EditProduct = () => {
                   <h4 className="text-sm font-medium text-slate-600 mb-2">Current Videos:</h4>
                   <div className="flex flex-wrap gap-3">
                     {existingVideos.map((video, index) => (
-                      <div key={`existing-video-${index}`} className="relative">
-                        <video
-                          src={`${backendURL}/video/${video}`}
+                      <div key={`existing-video-${index}`} className="relative">                        <video
+                          src={getVideoUrl(video)}
                           className="h-24 w-24 object-cover border rounded"
                           controls
                         />

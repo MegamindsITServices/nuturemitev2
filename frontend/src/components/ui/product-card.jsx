@@ -1,12 +1,13 @@
 import { Star, ShoppingCart, Heart, Loader2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import useIntersectionObserver from "../../hooks/useIntersectionObserver";
-import { ADD_TO_CART, backendURL } from "../../lib/api-client";
+import { ADD_TO_CART } from "../../lib/api-client";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import { axiosInstance, getConfig } from "../../utils/request";
 import { Link } from "react-router-dom";
+import { getProductImageUrl } from "../../utils/imageUtils";
 
 // Helper function to format price
 const formatPrice = (price) => {
@@ -78,10 +79,9 @@ const ProductCard = ({ product, priority = false }) => {
             {/* Main Image */}
             {product?.images && product.images.length > 0 && (
               <div className="relative w-full h-full">
-                {product.images.map((image, index) => (
-                  <img
+                {product.images.map((image, index) => (                  <img
                     key={index}
-                    src={`${backendURL}/image/${image}`}
+                    src={getProductImageUrl(image)}
                     alt={`${product.name} ${
                       index === 0 ? "main" : "view " + index
                     }`}
