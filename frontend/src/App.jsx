@@ -46,6 +46,8 @@ import ContactUs from "./pages/about/ContactUs";
 import CustomerProtectedRoute from "./routes/CustomerProtectedRoute";
 import CustomerDashboardLayout from "./components/layouts/customerDashboardLayout/dashboard.layout";
 import CustomerDashboard from "./pages/CustomerDashboard/Dashboard";
+import Faqs from "./pages/company/Faqs";
+import ReturnAndRefund from "./pages/company/ReturnAndRefund";
 
 const App = () => {
   const location = useLocation();
@@ -68,6 +70,8 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/faqs" element={<Faqs/>} />
+        <Route path="/return-refund-policy" element={<ReturnAndRefund />} />
         <Route
           path="/products/collections/:collectionId"
           element={<Products />}
@@ -80,6 +84,7 @@ const App = () => {
         <Route path="/blog/:slug" element={<BlogDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success/:orderId" element={<OrderStatus />} />
