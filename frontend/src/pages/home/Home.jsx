@@ -196,7 +196,7 @@ const features = [
     },
     {
       id: 3,
-      title: "Tasty Meets Healthy",
+      title: "Rooted in Tradition, Made for Today",
       icon: <Atom className="h-8 w-8 text-white" />,
     },
     {
@@ -206,7 +206,7 @@ const features = [
     },
     {
       id: 5,
-      title: "Rooted in Tradition, Made for Today",
+      title: "Sustainably Sourced, Family Approved",
       icon: <Heart className="h-8 w-8 text-white" />,
     },
 ]
@@ -253,9 +253,9 @@ const features = [
     <>
       <div className="flex flex-col min-h-screen">
         {/* Backend URL debugging - comment out or remove in production */}
-        <div className="container mx-auto px-4 mt-4">
+        {/* <div className="container mx-auto px-4 mt-4">
           <BackendUrlTest />
-        </div>
+        </div> */}
         
         <section className="relative w-full">
           <Carousel

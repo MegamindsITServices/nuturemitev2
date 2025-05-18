@@ -1,21 +1,20 @@
 import React from "react";
-import {
-  Heart,
-  Users,
-  Award,
-  Star,
-  Shield,
-  ChevronRight
-} from "lucide-react";
+import { Heart, Users, Award, Star, Shield, ChevronRight } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { motion } from "framer-motion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../../components/ui/accordion";
 
 const About = () => {
   const fadeIn = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.8 }
+    transition: { duration: 0.8 },
   };
 
   // Values section data
@@ -23,47 +22,71 @@ const About = () => {
     {
       icon: <Heart className="h-8 w-8 text-primary" />,
       title: "Passion for Nutrition",
-      description: "We're deeply committed to improving lives through better nutrition and education."
+      description:
+        "We're deeply committed to improving lives through better nutrition and education.",
     },
     {
       icon: <Users className="h-8 w-8 text-primary" />,
       title: "Customer-Centric",
-      description: "Your health journey is our priority. We provide personalized guidance and support."
+      description:
+        "Your health journey is our priority. We provide personalized guidance and support.",
     },
     {
       icon: <Award className="h-8 w-8 text-primary" />,
       title: "Quality Excellence",
-      description: "We source only the highest quality ingredients for our supplements and recommendations."
+      description:
+        "We source only the highest quality ingredients for our supplements and recommendations.",
     },
     {
       icon: <Shield className="h-8 w-8 text-primary" />,
       title: "Scientific Integrity",
-      description: "Our advice is grounded in scientific research and evidence-based practices."
-    }
+      description:
+        "Our advice is grounded in scientific research and evidence-based practices.",
+    },
   ];
 
-  // Team members data
-  const teamMembers = [
+  // FAQs data
+  const faqs = [
     {
-      name: "Dr. Aarav Sharma",
-      role: "Chief Nutritionist",
-      image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=250&q=80"
+      question: " When will I receive my order?",
+      answer:
+        " Orders are typically processed within 1–2 business days and delivered within 3–7 business days depending on your location",
     },
     {
-      name: "Priya Patel",
-      role: "Dietetics Specialist",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=250&q=80"
+      question: "Can I cancel or modify my order after placing it? ",
+      answer:
+        "If your order hasn’t been dispatched yet, we can help you modify or cancel it. Just write to us at sales@nuturemite.com within 2 hours of placing the order.",
     },
     {
-      name: "Rahul Mehta",
-      role: "Fitness Coach",
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=250&q=80"
+      question: " I received the wrong or damaged item. What should I do?",
+      answer:
+        " We’re so sorry! Please email us with your order ID and a photo of the product, and we’ll make it right. ",
     },
     {
-      name: "Ananya Singh",
-      role: "Health Researcher",
-      image: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=250&q=80"
-    }
+      question: "Are your products suitable for kids? ",
+      answer:
+        "Absolutely. Our products are made with clean, simple ingredients and no junk — perfect for all age groups",
+    },
+    {
+      question: "Are your products gluten-free?",
+      answer:
+        "Yes! All our millet-based products are naturally gluten-free. We ensure they’re processed in a clean environment to avoid contamination.",
+    },
+    {
+      question: "Do you ship across India? ",
+      answer:
+        "Yes, we currently deliver to most pincodes across India. If you’re unsure about your location, just drop us a message!",
+    },
+    {
+      question: "How I will track my order? ",
+      answer:
+        "Once your order is placed, you’ll receive a confirmation email and SMS with tracking details. You can use that link to follow your order in real-time. ",
+    },
+    {
+      question: "Still have questions? ",
+      answer:
+        "We’re just a message away. Write to us at sales@nuturemite.info , and we’ll get back to you within 24 hours. You can also check our social media pages for updates and millet magic!",
+    },
   ];
 
   return (
@@ -75,9 +98,12 @@ const About = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">About Nuturemite</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
+          About Nuturemite
+        </h1>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          We're dedicated to improving lives through proper nutrition, expert guidance, and quality supplements.
+          We're dedicated to improving lives through proper nutrition, expert
+          guidance, and quality supplements.
         </p>
       </motion.section>
 
@@ -96,12 +122,20 @@ const About = () => {
           >
             <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
             <p className="text-gray-600 mb-6">
-              Nuturemite aims to support individual health by recommending appropriate foods based on body acceptability, contributing to a healthier society. We provide expert advice and timely delivery of quality food supplements to clients, ensuring their well-being.
+              Nuturemite aims to support individual health by recommending
+              appropriate foods based on body acceptability, contributing to a
+              healthier society. We provide expert advice and timely delivery of
+              quality food supplements to clients, ensuring their well-being.
             </p>
 
             <h2 className="text-3xl font-bold mb-6 mt-10">Our Vision</h2>
             <p className="text-gray-600 mb-6">
-              We at Nuturemite respect and appreciate all health care professionals who dedicate time to their clients. We believe in partnerships with health care professionals and focus on our mission, which is truly important and meaningful to us. We are eager to hear from you regarding health queries and strive to achieve our vision through customer and employee satisfaction.
+              We at Nuturemite respect and appreciate all health care
+              professionals who dedicate time to their clients. We believe in
+              partnerships with health care professionals and focus on our
+              mission, which is truly important and meaningful to us. We are
+              eager to hear from you regarding health queries and strive to
+              achieve our vision through customer and employee satisfaction.
             </p>
 
             <Button className="mt-4 flex items-center">
@@ -138,14 +172,14 @@ const About = () => {
           >
             <h2 className="text-2xl font-bold mb-4">What We Do</h2>
             <p className="text-gray-600">
-              Nuturemite is the site that gives you information regarding the foods
-              that boost up the health of an individual, their effects on different
-              systems of our body, various food recipes, food safety, health, and
-              fitness, food based on different age groups. We expose you to experts
-              and professionals in fitness and health, whose suggestions can answer
-              your queries, available in different languages as per customer
-              requests. We also provide high-quality food supplements if required,
-              based on prescriptions.
+              Nuturemite is the site that gives you information regarding the
+              foods that boost up the health of an individual, their effects on
+              different systems of our body, various food recipes, food safety,
+              health, and fitness, food based on different age groups. We expose
+              you to experts and professionals in fitness and health, whose
+              suggestions can answer your queries, available in different
+              languages as per customer requests. We also provide high-quality
+              food supplements if required, based on prescriptions.
             </p>
           </motion.div>
 
@@ -159,11 +193,12 @@ const About = () => {
               We, through our website Nuturemite, bring experts in nutrition and
               health care to guide you on proper nutrition, food choices to keep
               yourself fit and healthy, owing to disease symptoms or chronic
-              suffering. We provide nutritional benefits about foods, and guide you
-              to have the right food, at the right time, in the right way as per
-              your body requirements. Our registered dietitians and nutritionists
-              design various nutrition programs to raise awareness about nutritious
-              foods and their role in preventing chronic diseases.
+              suffering. We provide nutritional benefits about foods, and guide
+              you to have the right food, at the right time, in the right way as
+              per your body requirements. Our registered dietitians and
+              nutritionists design various nutrition programs to raise awareness
+              about nutritious foods and their role in preventing chronic
+              diseases.
             </p>
           </motion.div>
         </div>
@@ -207,44 +242,35 @@ const About = () => {
           <p className="text-gray-600 mb-8">
             We offer online consultations with high-profile professionals in
             health care, diet, fitness, etc., who address your concerns and
-            provide appropriate guidance. Our timely response ensures your health
-            is not neglected.
+            provide appropriate guidance. Our timely response ensures your
+            health is not neglected.
           </p>
-          <Button size="lg">
-            Book a Consultation
-          </Button>
+          <Button size="lg">Book a Consultation</Button>
         </div>
       </motion.section>
 
-      {/* Team Section */}
+      {/* FAQ Section */}
       <motion.section
         className="mb-20"
         {...fadeIn}
         transition={{ duration: 0.8, delay: 1.0 }}
       >
-        <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {teamMembers.map((member, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 1.1 + index * 0.1 }}
-              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-full object-cover transition-transform hover:scale-105"
-                />
-              </div>
-              <div className="p-4 text-center">
-                <h3 className="text-lg font-semibold">{member.name}</h3>
-                <p className="text-gray-500">{member.role}</p>
-              </div>
-            </motion.div>
-          ))}
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Frequently Asked Questions
+        </h2>
+        <div className="space-y-4">
+          <Accordion type="single" collapsible>
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="bg-primary/10 text-primary font-semibold">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="bg-white text-gray-700">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </motion.section>
 
@@ -254,18 +280,28 @@ const About = () => {
         {...fadeIn}
         transition={{ duration: 0.8, delay: 1.2 }}
       >
-        <h2 className="text-3xl font-bold text-center mb-12">What Our Clients Say</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">
+          What Our Clients Say
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((item) => (
-            <Card key={item} className="shadow-md hover:shadow-lg transition-shadow">
+            <Card
+              key={item}
+              className="shadow-md hover:shadow-lg transition-shadow"
+            >
               <CardContent className="p-6">
                 <div className="flex mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                    <Star
+                      key={star}
+                      className="h-5 w-5 text-yellow-400 fill-yellow-400"
+                    />
                   ))}
                 </div>
                 <p className="text-gray-600 italic mb-6">
-                  "Nuturemite has completely transformed my relationship with food. The personalized nutrition plan has helped me feel more energized and healthier than ever before."
+                  "Nuturemite has completely transformed my relationship with
+                  food. The personalized nutrition plan has helped me feel more
+                  energized and healthier than ever before."
                 </p>
                 <div className="flex items-center">
                   <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center mr-3">
@@ -275,7 +311,9 @@ const About = () => {
                   </div>
                   <div>
                     <p className="font-medium">Happy Client {item}</p>
-                    <p className="text-sm text-gray-500">Nutrition Program Client</p>
+                    <p className="text-sm text-gray-500">
+                      Nutrition Program Client
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -291,15 +329,26 @@ const About = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.3 }}
       >
-        <h2 className="text-3xl font-bold mb-4">Ready to Start Your Health Journey?</h2>
+        <h2 className="text-3xl font-bold mb-4">
+          Ready to Start Your Health Journey?
+        </h2>
         <p className="text-lg mb-8 max-w-2xl mx-auto">
-          Join thousands of individuals who have improved their lives through our nutrition guidance and supplements.
+          Join thousands of individuals who have improved their lives through
+          our nutrition guidance and supplements.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button variant="outline" size="lg" className="bg-white text-primary hover:bg-gray-100">
+          <Button
+            variant="outline"
+            size="lg"
+            className="bg-white text-primary hover:bg-gray-100"
+          >
             View Our Products
           </Button>
-          <Button variant="outline" size="lg" className="bg-transparent border-white hover:bg-white/10">
+          <Button
+            variant="outline"
+            size="lg"
+            className="bg-transparent border-white hover:bg-white/10"
+          >
             Contact Us Today
           </Button>
         </div>

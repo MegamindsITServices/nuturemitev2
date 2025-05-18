@@ -86,25 +86,13 @@ const Footer = () => {
           {/* Company Column */}
           <div>
             <h3 className="text-white font-medium mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="#" className="text-gray-400 hover:text-white text-sm">
+            <ul className="space-y-2">              <li>
+                <Link to="/faqs" className="text-gray-400 hover:text-white text-sm">
                   Help & FAQs
                 </Link>
-              </li>
-              <li>
-                <Link to="#" className="text-gray-400 hover:text-white text-sm">
-                  Refund policy
-                </Link>
-              </li>
-              <li>
-                <Link to="#" className="text-gray-400 hover:text-white text-sm">
-                  Shipping policy
-                </Link>
-              </li>
-              <li>
-                <Link to="#" className="text-gray-400 hover:text-white text-sm">
-                  Privacy Policy
+              </li><li>
+                <Link to="/return-and-refund" className="text-gray-400 hover:text-white text-sm">
+                  Return & Refund Policy
                 </Link>
               </li>
               <li>
