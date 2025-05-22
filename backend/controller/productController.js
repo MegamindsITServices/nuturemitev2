@@ -13,17 +13,41 @@ const uploadsDir = path.join(__dirname, "../uploads");
 
 export const addProduct = async (req, res) => {
   try {
-    const { name, description, price, originalPrice, discount, feature, collection } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      originalPrice, 
+      discount, 
+      feature, 
+      collection,
+      shortDescription,
+      nutritionInfo,
+      importantInformation,
+      productDescription,
+      measurements,
+      manufacturer,
+      marketedBy,
+      keyFeatures
+    } = req.body;
+
+    // Check required fields
     if (!name || !description || !price || !originalPrice || !collection) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    // Validate feature if provided
     if (feature && !['sold out', 'new', 'hot'].includes(feature)) {
       return res.status(400).json({ message: "Feature must be one of: 'sold out', 'new', 'hot'" });
     }
     
-    // Process uploaded images and videos
+    // Process uploaded images and videos for the main product
     const images = req.files?.images?.map(file => file.filename) || [];
     const videos = req.files?.videos?.map(file => file.filename) || [];
+    
+    // Process additional media for product description section
+    const productDescImages = req.files?.productDescImages?.map(file => file.filename) || [];
+    const productDescVideos = req.files?.productDescVideos?.map(file => file.filename) || [];
     
     // Validate minimum required files
     if (images.length < 1) {
@@ -31,6 +55,7 @@ export const addProduct = async (req, res) => {
     }
     
     const slug = slugify(name, { lower: true });
+
     // Find collection by name or ID
     let collectionId;
     
@@ -51,7 +76,49 @@ export const addProduct = async (req, res) => {
         return res.status(404).json({ message: "Collection not found with the provided name" });
       }
       collectionId = collectionDoc._id;
-    }    // Create new product with image and video paths
+    }
+
+    // Parse complex JSON fields if they were sent as strings
+    let parsedShortDescription = shortDescription;
+    let parsedNutritionInfo = nutritionInfo;
+    let parsedImportantInformation = importantInformation;
+    let parsedMeasurements = measurements;
+    let parsedProductDescription = productDescription;
+
+    try {
+      if (typeof shortDescription === 'string') {
+        parsedShortDescription = JSON.parse(shortDescription);
+      }
+      if (typeof nutritionInfo === 'string') {
+        parsedNutritionInfo = JSON.parse(nutritionInfo);
+      }
+      if (typeof importantInformation === 'string') {
+        parsedImportantInformation = JSON.parse(importantInformation);
+      }
+      if (typeof measurements === 'string') {
+        parsedMeasurements = JSON.parse(measurements);
+      }
+      if (typeof productDescription === 'string') {
+        parsedProductDescription = JSON.parse(productDescription);
+      }
+    } catch (e) {
+      console.error("Error parsing JSON fields:", e);
+    }
+
+    // Update product description with media files if they exist
+    if (productDescImages.length > 0 || productDescVideos.length > 0) {
+      // Initialize product description if it doesn't exist
+      parsedProductDescription = parsedProductDescription || [{}];
+      
+      // Add the images and videos to the product description
+      parsedProductDescription[0] = {
+        ...parsedProductDescription[0],
+        images: productDescImages,
+        videos: productDescVideos
+      };
+    }
+
+    // Create new product with all fields from updated model
     const newProduct = new Product({
       name,
       slug,
@@ -62,8 +129,21 @@ export const addProduct = async (req, res) => {
       feature,
       collection: collectionId,
       images,
-      videos
+      videos,
+      // Add new fields from the updated model
+      shortDescription: parsedShortDescription || [],
+      nutritionInfo: parsedNutritionInfo || [],
+      importantInformation: parsedImportantInformation || [],
+      productDescription: parsedProductDescription || [{
+        images: [],
+        videos: []
+      }],
+      measurements: parsedMeasurements || [],
+      manufacturer: manufacturer || "",
+      marketedBy: marketedBy || "",
+      keyFeatures: keyFeatures || ""
     });
+
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -135,14 +215,21 @@ export const getProductBySlug = async (req, res) => {
       .populate('collection', 'name slug')
       .populate('reviews');
       
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+      
     // If product has reviews, calculate average rating
     let avgRating = 0;
     let reviewsCount = 0;
     
-    if (product && product.reviews && product.reviews.length > 0) {
+    if (product.reviews && product.reviews.length > 0) {
       reviewsCount = product.reviews.length;
-      const totalRating = product.reviews.reduce((sum, review) => sum + review.reviewStars, 0);
-      avgRating = totalRating / reviewsCount;
+      const totalRating = product.reviews.reduce((sum, review) => sum + (review.reviewStars || 0), 0);
+      avgRating = reviewsCount > 0 ? totalRating / reviewsCount : 0;
     }
     
     // Add rating data to response
@@ -152,65 +239,32 @@ export const getProductBySlug = async (req, res) => {
       reviewsCount
     };
       
-    res.status(200).send({
+    res.status(200).json({
       success: true,
       message: "Product fetched successfully",
       product: productWithRatings,
-    })
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: "Error fetching product by slug",
+      error: error.message 
+    });
   }
 };
 
 // Get product by ID
 export const getProductById = async (req, res) => {
   try {
-    const productId = req.params.id;
+    const product = await Product.findById(req.params.id).populate('collection', 'name slug');
     
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Invalid product ID"
-      });
-    }
-    
-    const product = await Product.findById(productId)
-      .populate('collection', 'name slug')
-      .populate('reviews');
-      
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found"
-      });
+      return res.status(404).json({ message: 'Product not found' });
     }
     
-    // If product has reviews, calculate average rating
-    let avgRating = 0;
-    let reviewsCount = 0;
-    
-    if (product.reviews && product.reviews.length > 0) {
-      reviewsCount = product.reviews.length;
-      const totalRating = product.reviews.reduce((sum, review) => sum + review.reviewStars, 0);
-      avgRating = totalRating / reviewsCount;
-    }
-    
-    // Add rating data to response
-    const productWithRatings = product.toObject();
-    productWithRatings.avgRating = avgRating;
-    productWithRatings.reviewsCount = reviewsCount;
-      
-    res.status(200).json({
-      success: true,
-      message: "Product fetched successfully by ID",
-      product: productWithRatings,
-    });
+    res.status(200).json(product);
   } catch (error) {
-    res.status(500).json({ 
-      success: false,
-      message: "Error fetching product by ID",
-      error: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -218,40 +272,56 @@ export const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     
-    // Find product to update
-    const product = await Product.findById(productId);
-    if (!product) {
+    // Check if product exists
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
     
-    // Extract data from request body
-    const { name, description, price, originalPrice, discount, feature, collection } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      originalPrice, 
+      discount, 
+      feature, 
+      collection,
+      shortDescription,
+      nutritionInfo,
+      importantInformation,
+      productDescription,
+      measurements,
+      manufacturer,
+      marketedBy,
+      keyFeatures
+    } = req.body;
+
+    // Create updated product object
+    const updatedProductData = {};
     
-    // Update basic fields
-    const updateData = {
-      name: name || product.name,
-      description: description || product.description,
-      price: price || product.price,
-      originalPrice: originalPrice || product.originalPrice,
-      discount: discount !== undefined ? discount : product.discount
-    };
-    
-    // Update slug if name changes
+    // Update basic fields if provided
     if (name) {
-      updateData.slug = slugify(name, { lower: true });
+      updatedProductData.name = name;
+      updatedProductData.slug = slugify(name, { lower: true });
     }
     
-    // Validate feature if provided
-    if (feature) {
-      if (!['sold out', 'new', 'hot'].includes(feature)) {
-        return res.status(400).json({ message: "Feature must be one of: 'sold out', 'new', 'hot'" });
+    // Update other simple fields if provided
+    const simpleFields = ['description', 'price', 'originalPrice', 'discount', 'manufacturer', 'marketedBy', 'keyFeatures'];
+    simpleFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updatedProductData[field] = req.body[field];
       }
-      updateData.feature = feature;
+    });
+    
+    // Update feature if valid
+    if (feature && !['sold out', 'new', 'hot'].includes(feature)) {
+      return res.status(400).json({ message: "Feature must be one of: 'sold out', 'new', 'hot'" });
+    } else if (feature) {
+      updatedProductData.feature = feature;
     }
     
-    // Handle collection update
+    // Update collection if provided
     if (collection) {
-      // Find collection by name or ID
       let collectionId;
       
       // Check if the collection is a valid ObjectId
@@ -273,34 +343,126 @@ export const updateProduct = async (req, res) => {
         collectionId = collectionDoc._id;
       }
       
-      updateData.collection = collectionId;
+      updatedProductData.collection = collectionId;
     }
-    
-    // Handle image updates if files are provided
-    if (req.files) {
-      // Update images if provided
-      if (req.files.images && req.files.images.length > 0) {
-        // Store new image filenames
-        updateData.images = req.files.images.map(file => file.filename);
+
+    // Parse complex JSON fields if they were sent as strings
+    try {
+      if (typeof shortDescription === 'string') {
+        updatedProductData.shortDescription = JSON.parse(shortDescription);
+      } else if (shortDescription) {
+        updatedProductData.shortDescription = shortDescription;
       }
       
-      // Update videos if provided
+      if (typeof nutritionInfo === 'string') {
+        updatedProductData.nutritionInfo = JSON.parse(nutritionInfo);
+      } else if (nutritionInfo) {
+        updatedProductData.nutritionInfo = nutritionInfo;
+      }
+      
+      if (typeof importantInformation === 'string') {
+        updatedProductData.importantInformation = JSON.parse(importantInformation);
+      } else if (importantInformation) {
+        updatedProductData.importantInformation = importantInformation;
+      }
+      
+      if (typeof measurements === 'string') {
+        updatedProductData.measurements = JSON.parse(measurements);
+      } else if (measurements) {
+        updatedProductData.measurements = measurements;
+      }
+      
+      if (typeof productDescription === 'string') {
+        updatedProductData.productDescription = JSON.parse(productDescription);
+      } else if (productDescription) {
+        updatedProductData.productDescription = productDescription;
+      }
+    } catch (e) {
+      console.error("Error parsing JSON fields:", e);
+      return res.status(400).json({ message: "Invalid JSON format in request body" });
+    }
+
+    // Handle file uploads
+    if (req.files) {
+      // Handle main product images
+      if (req.files.images && req.files.images.length > 0) {
+        // Delete old images if they exist
+        for (const imagePath of existingProduct.images) {
+          const fullPath = path.join(uploadsDir, imagePath);
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+          }
+        }
+        // Add new images
+        updatedProductData.images = req.files.images.map(file => file.filename);
+      }
+      
+      // Handle main product videos
       if (req.files.videos && req.files.videos.length > 0) {
-        // Store new video filenames
-        updateData.videos = req.files.videos.map(file => file.filename);
+        // Delete old videos if they exist
+        for (const videoPath of existingProduct.videos) {
+          const fullPath = path.join(uploadsDir, videoPath);
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+          }
+        }
+        // Add new videos
+        updatedProductData.videos = req.files.videos.map(file => file.filename);
+      }
+      
+      // Handle product description images and videos
+      if (req.files.productDescImages || req.files.productDescVideos) {
+        // Get current product description or initialize if it doesn't exist
+        const currentProductDesc = updatedProductData.productDescription || existingProduct.productDescription || [{}];
+        
+        // Handle product description images
+        if (req.files.productDescImages && req.files.productDescImages.length > 0) {
+          // Delete old product description images if they exist
+          if (existingProduct.productDescription && existingProduct.productDescription[0] && existingProduct.productDescription[0].images) {
+            for (const imagePath of existingProduct.productDescription[0].images) {
+              const fullPath = path.join(uploadsDir, imagePath);
+              if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+              }
+            }
+          }
+          
+          // Set new images in product description
+          currentProductDesc[0].images = req.files.productDescImages.map(file => file.filename);
+        }
+        
+        // Handle product description videos
+        if (req.files.productDescVideos && req.files.productDescVideos.length > 0) {
+          // Delete old product description videos if they exist
+          if (existingProduct.productDescription && existingProduct.productDescription[0] && existingProduct.productDescription[0].videos) {
+            for (const videoPath of existingProduct.productDescription[0].videos) {
+              const fullPath = path.join(uploadsDir, videoPath);
+              if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+              }
+            }
+          }
+          
+          // Set new videos in product description
+          currentProductDesc[0].videos = req.files.productDescVideos.map(file => file.filename);
+        }
+        
+        // Update the product description in the updated product data
+        updatedProductData.productDescription = currentProductDesc;
       }
     }
     
-    // Update the product
+    // Update the product in the database with all changes
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      updateData,
+      updatedProductData,
       { new: true, runValidators: true }
-    ).populate('collection', 'name slug');
+    );
     
     res.status(200).json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -308,37 +470,40 @@ export const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     
-    // Find product to delete
+    // Find the product
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
     
-    // Delete associated images
-    // Delete all associated images and videos
-    if (product.images && product.images.length > 0) {
-      product.images.forEach(image => {
-        const imagePath = path.join(uploadsDir, image);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
+    // Delete associated files
+    const deleteImageFiles = (imageFiles) => {
+      if (!imageFiles || !Array.isArray(imageFiles)) return;
+      
+      imageFiles.forEach(filename => {
+        const filePath = path.join(uploadsDir, filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
         }
       });
+    };
+    
+    // Delete main product images and videos
+    deleteImageFiles(product.images);
+    deleteImageFiles(product.videos);
+    
+    // Delete product description images and videos
+    if (product.productDescription && product.productDescription[0]) {
+      deleteImageFiles(product.productDescription[0].images);
+      deleteImageFiles(product.productDescription[0].videos);
     }
     
-    if (product.videos && product.videos.length > 0) {
-      product.videos.forEach(video => {
-        const videoPath = path.join(uploadsDir, video);
-        if (fs.existsSync(videoPath)) {
-          fs.unlinkSync(videoPath);
-        }
-      });
-    }
-    
-    // Delete the product
+    // Delete the product from the database
     await Product.findByIdAndDelete(productId);
     
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
+    console.error("Error deleting product:", error);
     res.status(500).json({ message: error.message });
   }
 };

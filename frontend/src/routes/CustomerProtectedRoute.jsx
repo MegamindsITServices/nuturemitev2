@@ -1,9 +1,57 @@
-import React from 'react'
+import { axiosInstance, getConfig } from "../utils/request";
+import { useAuth } from "../context/AuthContext";
+import React, { useEffect, useState } from "react";
+import { Outlet, Navigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const CustomerProtectedRoute = () => {
-  return (
-    <div>CustomerProtectedRoute</div>
-  )
-}
+  const [ok, setOk] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [auth] = useAuth();
+ 
+  useEffect(() => {
+    const customerCheck = async () => {
+      setLoading(true);
+      try {
+        await getConfig();
+        const res = await axiosInstance.get("/api/auth/customer-auth", {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
 
-export default CustomerProtectedRoute
+        if (res.data.ok) {
+          setOk(true);
+        } else {
+          setOk(false);
+        }
+      } catch (error) {
+        console.error("Error checking customer status:", error);
+        setOk(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (auth.token && auth.user) {
+      customerCheck();
+    } else {
+      setLoading(false);
+      setOk(false);
+    }
+  }, [auth.token, auth.user]);
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Verifying customer access...</span>
+      </div>
+    );
+  }
+  
+  // If user is not authenticated or not a customer, redirect to login
+  return ok ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+export default CustomerProtectedRoute;

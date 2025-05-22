@@ -18,20 +18,28 @@ const GoogleLoginButton = () => {
           token: tokenResponse.access_token
         });
 
-        if (response.data && response.data.success) {
-          // Update auth context with user data
+        if (response.data && response.data.success) {          // Update auth context with user data
           setAuth({
             user: response.data.user,
             token: response.data.token,
           });
-              // Store in localStorage
+          
+          // Store in localStorage
           localStorage.setItem('auth', JSON.stringify({
             user: response.data.user,
             token: response.data.token,
           }));
-          
-          toast.success('Logged in with Google successfully!');
-          navigate('/');
+            // Check user role and redirect accordingly
+          if (response.data.user.isAdmin) {
+            toast.success('Welcome back, Admin!');
+            navigate('/admin/dashboard');
+          } else if (response.data.user.isUser) {
+            toast.success('Welcome to your customer dashboard!');
+            navigate('/customer/dashboard');
+          } else {
+            toast.success('Logged in with Google successfully!');
+            navigate('/');
+          }
         }
       } catch (error) {
         console.error('Google login error:', error);

@@ -48,7 +48,8 @@ const Checkout = () => {
   // Calculate subtotal, shipping, and taxes
   const subtotal = cartTotal;
   // Apply shipping fee for orders below Rs. 600
-  const shipping = subtotal > 0 ? (subtotal >= 600 ? 0 : 50) : 0;
+  // const shipping = subtotal > 0 ? (subtotal >= 600 ? 0 : 50) : 0;
+  const shipping = 0
   // const tax = subtotal * 0.18; // 18% GST
   const tax = 0
   const totalAmount = subtotal + shipping + tax;

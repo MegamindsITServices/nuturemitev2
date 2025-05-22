@@ -1,7 +1,39 @@
-import { UserCog } from "lucide-react";
+import { Layout, Truck, UserCog, ChevronDown } from "lucide-react";
 import React from "react";
-import { Sidebar, SidebarContent, SidebarHeader } from "../ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarRail,
+} from "../ui/sidebar";
 import { LogoArea } from "../dashboardSidebar/LogoArea";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible";
+import { Link } from "react-router-dom";
+const DynamicIcon = ({ name, className }) => {
+  if (name === "chevron-down") {
+    return <ChevronDown className={className} size={16} />;
+  }
+  // Return the icon directly if it's already a React element
+  if (React.isValidElement(name)) {
+    return React.cloneElement(name, { className, size: 16 });
+  }
+  // Default case
+  return null;
+};
+
 const data = {
   menu: [
     {
@@ -69,7 +101,7 @@ const data = {
 const ClientDashboardSidebar = ({ props }) => {
   return (
     <div>
-    <Sidebar variant="sidebar" collapsible="icon" {...props}>
+      <Sidebar variant="sidebar" collapsible="icon" {...props}>
         <SidebarHeader>
           <LogoArea />
         </SidebarHeader>

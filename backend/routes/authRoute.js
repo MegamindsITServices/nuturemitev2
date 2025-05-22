@@ -6,7 +6,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import { isAdmin, requireSignIn } from '../middleware/authMiddleware.js';
+import { isAdmin, isCustomer, requireSignIn } from '../middleware/authMiddleware.js';
 // Get the directory name in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +55,9 @@ authRoute.post('/google/verify', verifyGoogleToken);
 authRoute.get('/admin-auth', requireSignIn, isAdmin, (req,res)=>{
   res.status(200).json({ok: true, message: "You are an admin"});
 })
-
+authRoute.get('/customer-auth', requireSignIn, isCustomer, (req,res)=>{
+  res.status(200).json({ok: true, message: "You are a customer"});
+})
 // Get current user
 authRoute.get('/me', getCurrentUser);
 

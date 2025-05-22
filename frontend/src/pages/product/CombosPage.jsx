@@ -89,7 +89,7 @@ const CombosPage = () => {
                   {collection.image ? (
                     <div className="h-48 overflow-hidden">
                       <img 
-                        src={`http://localhost:8080/collection/${collection.image}`} 
+                        src={`https://api.nuturemite.info/collection/${collection.image}`} 
                         alt={collection.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />

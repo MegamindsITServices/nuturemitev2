@@ -39,6 +39,7 @@ import AllBanners from "./pages/Dashboard/banner/AllBanners";
 import AddAdmin from "./pages/Dashboard/admins/AddAdmin";
 import ViewAllAdmins from "./pages/Dashboard/admins/ViewAllAdmins";
 import AllOrders from "./pages/Dashboard/orders/AllOrders";
+import OrderDetail from "./pages/Dashboard/orders/OrderDetail";
 import AddBlog from "./pages/Dashboard/blogs/AddBlog";
 import ViewBlog from "./pages/Dashboard/blogs/ViewBlog";
 import BlogDetails from "./pages/blog/BlogDetails";
@@ -46,13 +47,16 @@ import ContactUs from "./pages/about/ContactUs";
 import CustomerProtectedRoute from "./routes/CustomerProtectedRoute";
 import CustomerDashboardLayout from "./components/layouts/customerDashboardLayout/dashboard.layout";
 import CustomerDashboard from "./pages/CustomerDashboard/Dashboard";
+import CustomerOrderDetail from "./pages/CustomerDashboard/orders/CustomerOrderDetail";
 import Faqs from "./pages/company/Faqs";
 import ReturnAndRefund from "./pages/company/ReturnAndRefund";
+import CustomerOrders from "./pages/CustomerDashboard/orders/CustomerOrders";
 
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isNotFound = location.pathname.startsWith("*");
+  const isUserRoute = location.pathname.startsWith("/customer")
 
   // Initialize the API configuration on app mount
   React.useEffect(() => {
@@ -63,7 +67,7 @@ const App = () => {
 
   return (
     <CartProvider>
-      {!isAdminRoute && !isNotFound && <Navbar />}
+      {!isAdminRoute && !isNotFound && !isUserRoute && <Navbar />}
       <CartSidebar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -108,27 +112,26 @@ const App = () => {
             <Route path="edit-product/:id" element={<EditProduct />} />
             <Route path="products" element={<AllProducts />} />
             <Route path="add-banner" element={<AddBanner />} />
-            <Route path="banners" element={<AllBanners />} />
-            <Route path="add-admin" element={<AddAdmin />} />
+            <Route path="banners" element={<AllBanners />} />            <Route path="add-admin" element={<AddAdmin />} />
             <Route path="admins" element={<ViewAllAdmins />} />
             <Route path="orders" element={<AllOrders />} />
+            <Route path="orders/:orderId" element={<OrderDetail />} />
             <Route path="add-blog" element={<AddBlog />} />
             <Route path="blogs" element={<ViewBlog />} />
           </Route>
-        </Route>
-        {/* Customer Dashboard */}
+        </Route>        {/* Customer Dashboard */}
         <Route element={<CustomerProtectedRoute/>}>
-        <Route path="/customer" element={<CustomerDashboardLayout/>} >
-        <Route index element={<CustomerDashboard/>} />
-        <Route path="dashboard" element={<CustomerDashboard/>} />
-
-        </Route>
-
+          <Route path="/customer" element={<CustomerDashboardLayout/>}>            <Route index element={<CustomerDashboard/>} />
+            <Route path="dashboard" element={<CustomerDashboard/>} />
+            <Route path="orders" element={<CustomerOrders />} />
+            <Route path="orders/:orderId" element={<CustomerOrderDetail />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
         </Route>
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isAdminRoute && !isNotFound && <Footer />}
+      {!isAdminRoute && !isNotFound && !isUserRoute && <Footer />}
     </CartProvider>
   );
 };

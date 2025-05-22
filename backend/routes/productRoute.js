@@ -40,21 +40,24 @@ const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     // Check if file is an image or video
-    if (file.fieldname === 'images') {
+    if (file.fieldname === 'images' || file.fieldname === 'productDescImages') {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
-        cb(new Error('Only image files are allowed for images field'), false);
+        cb(new Error('Only image files are allowed for image fields'), false);
       }
-    } else if (file.fieldname === 'videos') {
+    } else if (file.fieldname === 'videos' || file.fieldname === 'productDescVideos') {
       if (file.mimetype.startsWith('video/')) {
         cb(null, true);
       } else {
-        cb(new Error('Only video files are allowed for videos field'), false);
+        cb(new Error('Only video files are allowed for video fields'), false);
       }
     } else {
       cb(null, true);
     }
+  },
+  limits: {
+    fileSize: 1024 * 1024 * 50 // 50MB max file size
   }
 });
 
@@ -62,8 +65,10 @@ const productRoute = express.Router();
 
 // Create fields configuration for multiple file types
 const uploadFields = [
-  { name: 'images', maxCount: 10 },  // Max 10 images
-  { name: 'videos', maxCount: 3 }    // Max 3 videos
+  { name: 'images', maxCount: 10 },               // Max 10 main product images
+  { name: 'videos', maxCount: 3 },                // Max 3 main product videos
+  { name: 'productDescImages', maxCount: 10 },    // Max 10 product description images
+  { name: 'productDescVideos', maxCount: 3 }      // Max 3 product description videos
 ];
 
 // Routes with multer middleware for image uploads

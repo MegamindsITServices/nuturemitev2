@@ -10,6 +10,7 @@ import { Badge } from "../../components/ui/badge";
 import RelatedProducts from "../../components/product/RelatedProducts";
 import ReviewDialog from "../../components/product/ReviewDialog";
 import ProductReviews from "../../components/product/ProductReviews";
+import ProductSpecifications from "../../components/product/ProductSpecifications";
 import { toast } from "sonner";
 
 const ProductDetail = () => {  const [product, setProduct] = useState();
@@ -332,7 +333,10 @@ const ProductDetail = () => {  const [product, setProduct] = useState();
           </div>
         </div>
       </div>
-        {/* Product Reviews Section */}
+        {/* Product Specifications Section */}
+      {product && <ProductSpecifications product={product} />}
+      
+      {/* Product Reviews Section */}
       <div className="mt-12 border-t border-gray-200 pt-8">
         {product?._id && (
           <ProductReviews 
