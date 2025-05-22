@@ -17,6 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "../../../components/ui/accordion";
 import { Button } from "../../../components/ui/button";
 import { axiosInstance, getConfig } from "../../../utils/request";
 import { toast } from "sonner";
@@ -24,11 +30,9 @@ import { motion } from "framer-motion";
 import { GET_COLLECTION, GET_PRODUCT_BY_ID, UPDATE_PRODUCT } from "../../../lib/api-client";
 import { getProductImageUrl, getVideoUrl } from "../../../utils/imageUtils";
 import { Loader } from "lucide-react";
-
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -37,14 +41,66 @@ const EditProduct = () => {
     discount: "",
     feature: "none",
     collection: "",
+    // New fields from the updated product model
+    shortDescription: [{
+      brand: "",
+      category: "",
+      itemWeight: "",
+      dietType: "",
+      totalItems: "",
+      flavor: "",
+      packagingType: ""
+    }],
+    nutritionInfo: [{
+      protien: "",
+      fat: "",
+      carbohydrates: "",
+      iron: "",
+      calcium: "",
+      vitamin: "",
+      Energy: ""
+    }],
+    importantInformation: [{
+      ingredients: "",
+      storageTips: ""
+    }],
+    productDescription: [{
+      images: [],
+      videos: []
+    }],
+    measurements: [{
+      withoutPackaging: [{
+        height: "",
+        weight: "",
+        width: "",
+        length: ""
+      }],
+      withPackaging: [{
+        height: "",
+        weight: "",
+        width: "",
+        length: ""
+      }]
+    }],
+    manufacturer: "",
+    marketedBy: "",
+    keyFeatures: ""
   });
-
   const [newImages, setNewImages] = useState([]);
   const [newVideos, setNewVideos] = useState([]);
   const [imagesPreviews, setImagesPreviews] = useState([]);
   const [videosPreviews, setVideosPreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingVideos, setExistingVideos] = useState([]);
+  
+  // Product description media states
+  const [productDescImages, setProductDescImages] = useState([]);
+  const [productDescVideos, setProductDescVideos] = useState([]);
+  const [productDescImagesPreviews, setProductDescImagesPreviews] = useState([]);
+  const [productDescVideosPreviews, setProductDescVideosPreviews] = useState([]);
+  const [existingProductDescImages, setExistingProductDescImages] = useState([]);
+  const [existingProductDescVideos, setExistingProductDescVideos] = useState([]);
+  
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchingProduct, setFetchingProduct] = useState(true);
@@ -69,6 +125,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
+        await getConfig()
         const response = await axiosInstance.get(GET_COLLECTION);
         if (response.data && Array.isArray(response.data)) {
           setCollections(response.data);
@@ -82,7 +139,7 @@ const EditProduct = () => {
   }, []);
 
   // Fetch product data
-  useEffect(() => {
+  useEffect(() => {    
     const fetchProduct = async () => {
       setFetchingProduct(true);
       try {
@@ -92,7 +149,53 @@ const EditProduct = () => {
         
         const productData = response.data.product || response.data;
         
-        // Set form data
+        // Prepare default values for complex nested objects
+        const defaultShortDesc = [{
+          brand: "",
+          category: "",
+          itemWeight: "",
+          dietType: "",
+          totalItems: "",
+          flavor: "",
+          packagingType: ""
+        }];
+        
+        const defaultNutritionInfo = [{
+          protien: "",
+          fat: "",
+          carbohydrates: "",
+          iron: "",
+          calcium: "",
+          vitamin: "",
+          Energy: ""
+        }];
+        
+        const defaultImportantInfo = [{
+          ingredients: "",
+          storageTips: ""
+        }];
+        
+        const defaultProductDesc = [{
+          images: [],
+          videos: []
+        }];
+        
+        const defaultMeasurements = [{
+          withoutPackaging: [{
+            height: "",
+            weight: "",
+            width: "",
+            length: ""
+          }],
+          withPackaging: [{
+            height: "",
+            weight: "",
+            width: "",
+            length: ""
+          }]
+        }];
+        
+        // Set form data with all fields
         setFormData({
           name: productData.name || "",
           description: productData.description || "",
@@ -101,6 +204,15 @@ const EditProduct = () => {
           discount: productData.discount || "",
           feature: productData.feature || "none",
           collection: productData.collection?._id || "",
+          // New fields from the updated model
+          shortDescription: productData.shortDescription || defaultShortDesc,
+          nutritionInfo: productData.nutritionInfo || defaultNutritionInfo,
+          importantInformation: productData.importantInformation || defaultImportantInfo,
+          productDescription: productData.productDescription || defaultProductDesc,
+          measurements: productData.measurements || defaultMeasurements,
+          manufacturer: productData.manufacturer || "",
+          marketedBy: productData.marketedBy || "",
+          keyFeatures: productData.keyFeatures || ""
         });
 
         // Set existing images and videos
@@ -110,6 +222,21 @@ const EditProduct = () => {
         
         if (productData.videos && productData.videos.length > 0) {
           setExistingVideos(productData.videos);
+        }
+        
+        // Set existing product description images and videos
+        if (productData.productDescription && 
+            productData.productDescription[0] && 
+            productData.productDescription[0].images && 
+            productData.productDescription[0].images.length > 0) {
+          setExistingProductDescImages(productData.productDescription[0].images);
+        }
+        
+        if (productData.productDescription && 
+            productData.productDescription[0] && 
+            productData.productDescription[0].videos && 
+            productData.productDescription[0].videos.length > 0) {
+          setExistingProductDescVideos(productData.productDescription[0].videos);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -124,7 +251,6 @@ const EditProduct = () => {
       fetchProduct();
     }
   }, [id, navigate]);
-
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -140,6 +266,103 @@ const EditProduct = () => {
       ...formData,
       [name]: value,
     });
+  };
+  
+  // Handle nested object field changes
+  const handleNestedChange = (section, field, value, index = 0) => {
+    setFormData((prevData) => {
+      const updatedSection = [...prevData[section]];
+      updatedSection[index] = {
+        ...updatedSection[index],
+        [field]: value
+      };
+      
+      return {
+        ...prevData,
+        [section]: updatedSection
+      };
+    });
+  };
+  
+  // Handle deeply nested object field changes (for measurements)
+  const handleMeasurementChange = (packageType, field, value) => {
+    setFormData((prevData) => {
+      const updatedMeasurements = [...prevData.measurements];
+      
+      if (packageType === 'withoutPackaging') {
+        updatedMeasurements[0] = {
+          ...updatedMeasurements[0],
+          withoutPackaging: [{
+            ...updatedMeasurements[0]?.withoutPackaging[0] || {},
+            [field]: value
+          }]
+        };
+      } else if (packageType === 'withPackaging') {
+        updatedMeasurements[0] = {
+          ...updatedMeasurements[0],
+          withPackaging: [{
+            ...updatedMeasurements[0]?.withPackaging[0] || {},
+            [field]: value
+          }]
+        };
+      }
+      
+      return {
+        ...prevData,
+        measurements: updatedMeasurements
+      };
+    });
+  };
+  
+  // Handle product description media
+  const handleProductDescImagesChange = (e) => {
+    const { files } = e.target;
+    if (files && files.length > 0) {
+      // Store the selected files for upload
+      setProductDescImages(Array.from(files));
+      
+      // Create previews for all selected images
+      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      setProductDescImagesPreviews(previews);
+      
+      // Update formData with filenames (we'll replace this with actual URLs after upload)
+      setFormData(prevData => {
+        const updatedProductDesc = [...prevData.productDescription];
+        updatedProductDesc[0] = {
+          ...updatedProductDesc[0],
+          images: Array.from(files).map(file => file.name)
+        };
+        return {
+          ...prevData,
+          productDescription: updatedProductDesc
+        };
+      });
+    }
+  };
+  
+  const handleProductDescVideosChange = (e) => {
+    const { files } = e.target;
+    if (files && files.length > 0) {
+      // Store the selected files for upload
+      setProductDescVideos(Array.from(files));
+      
+      // Create previews for all selected videos
+      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      setProductDescVideosPreviews(previews);
+      
+      // Update formData with filenames (we'll replace this with actual URLs after upload)
+      setFormData(prevData => {
+        const updatedProductDesc = [...prevData.productDescription];
+        updatedProductDesc[0] = {
+          ...updatedProductDesc[0],
+          videos: Array.from(files).map(file => file.name)
+        };
+        return {
+          ...prevData,
+          productDescription: updatedProductDesc
+        };
+      });
+    }
   };
 
   // Handle image files change
@@ -191,7 +414,6 @@ const EditProduct = () => {
     setNewVideos(prev => prev.filter((_, i) => i !== index));
     setVideosPreviews(prev => prev.filter((_, i) => i !== index));
   };
-
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,15 +423,43 @@ const EditProduct = () => {
       // Create a new FormData object
       const productFormData = new FormData();
       
-      // Append basic form data
-      Object.keys(formData).forEach((key) => {
-        if (key === "feature" && formData[key] === "none") {
-          return;
-        }
+      // Append basic form data (string and number fields)
+      const simpleFields = ["name", "description", "price", "originalPrice", "discount", "manufacturer", "marketedBy", "keyFeatures"];
+      simpleFields.forEach(key => {
         if (formData[key] !== null && formData[key] !== "") {
           productFormData.append(key, formData[key]);
         }
       });
+      
+      // Handle feature field
+      if (formData.feature && formData.feature !== "none") {
+        productFormData.append("feature", formData.feature);
+      }
+      
+      // Handle collection field
+      if (formData.collection) {
+        productFormData.append("collection", formData.collection);
+      }
+      
+      // Append complex fields as JSON strings
+      const complexFields = ["shortDescription", "nutritionInfo", "importantInformation", "measurements"];
+      complexFields.forEach(key => {
+        productFormData.append(key, JSON.stringify(formData[key]));
+      });
+      
+      // Handle productDescription separately
+      const productDescriptionData = [...formData.productDescription];
+      
+      // Remove image and video references if new ones will be uploaded
+      if (productDescImages.length > 0 || existingProductDescImages.length > 0) {
+        productDescriptionData[0].images = [];
+      }
+      
+      if (productDescVideos.length > 0 || existingProductDescVideos.length > 0) {
+        productDescriptionData[0].videos = [];
+      }
+      
+      productFormData.append("productDescription", JSON.stringify(productDescriptionData));
       
       // Append existing images
       if (existingImages.length > 0) {
@@ -220,7 +470,17 @@ const EditProduct = () => {
       if (existingVideos.length > 0) {
         productFormData.append("existingVideos", JSON.stringify(existingVideos));
       }
-        // Validate total images (existing + new) - at least one is required
+      
+      // Append existing product description media
+      if (existingProductDescImages.length > 0) {
+        productFormData.append("existingProductDescImages", JSON.stringify(existingProductDescImages));
+      }
+      
+      if (existingProductDescVideos.length > 0) {
+        productFormData.append("existingProductDescVideos", JSON.stringify(existingProductDescVideos));
+      }
+      
+      // Validate total images (existing + new) - at least one is required
       if (existingImages.length + newImages.length < 1) {
         toast.error("Please select at least one image");
         setLoading(false);
@@ -238,6 +498,19 @@ const EditProduct = () => {
       if (newVideos.length > 0) {
         for (let i = 0; i < newVideos.length; i++) {
           productFormData.append("videos", newVideos[i]);
+        }
+      }
+      
+      // Append product description media
+      if (productDescImages.length > 0) {
+        for (let i = 0; i < productDescImages.length; i++) {
+          productFormData.append("productDescImages", productDescImages[i]);
+        }
+      }
+      
+      if (productDescVideos.length > 0) {
+        for (let i = 0; i < productDescVideos.length; i++) {
+          productFormData.append("productDescVideos", productDescVideos[i]);
         }
       }
       
@@ -468,8 +741,601 @@ const EditProduct = () => {
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select>
+                </Select>              </div>
+            </motion.div>
+
+            {/* Manufacturer Info */}
+            <motion.div variants={itemVariants} className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label
+                    className="text-slate-700 font-medium mb-2 block"
+                    htmlFor="manufacturer"
+                  >
+                    Manufacturer
+                  </Label>
+                  <Input
+                    type="text"
+                    id="manufacturer"
+                    name="manufacturer"
+                    value={formData.manufacturer}
+                    onChange={handleChange}
+                    placeholder="Enter manufacturer name"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <Label
+                    className="text-slate-700 font-medium mb-2 block"
+                    htmlFor="marketedBy"
+                  >
+                    Marketed By
+                  </Label>
+                  <Input
+                    type="text"
+                    id="marketedBy"
+                    name="marketedBy"
+                    value={formData.marketedBy}
+                    onChange={handleChange}
+                    placeholder="Enter marketing company"
+                    className="w-full"
+                  />
+                </div>
               </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="mb-6">
+              <Label
+                className="text-slate-700 font-medium mb-2 block"
+                htmlFor="keyFeatures"
+              >
+                Key Features
+              </Label>
+              <Textarea
+                id="keyFeatures"
+                name="keyFeatures"
+                value={formData.keyFeatures}
+                onChange={handleChange}
+                placeholder="Enter key product features"
+                className="min-h-20"
+              />
+            </motion.div>
+
+            {/* Accordion sections for detailed product information */}
+            <motion.div variants={itemVariants}>
+              <Accordion type="single" collapsible className="w-full">
+                {/* Short Description Section */}
+                <AccordionItem value="shortDescription">
+                  <AccordionTrigger className="text-md font-semibold text-slate-800 hover:no-underline">
+                    Short Description
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <Label htmlFor="brand">Brand</Label>
+                        <Input
+                          id="brand"
+                          value={formData.shortDescription[0]?.brand || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'brand', e.target.value)}
+                          placeholder="Enter brand name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Input
+                          id="category"
+                          value={formData.shortDescription[0]?.category || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'category', e.target.value)}
+                          placeholder="Enter category"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="itemWeight">Item Weight</Label>
+                        <Input
+                          id="itemWeight"
+                          value={formData.shortDescription[0]?.itemWeight || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'itemWeight', e.target.value)}
+                          placeholder="e.g., 250g"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dietType">Diet Type</Label>
+                        <Input
+                          id="dietType"
+                          value={formData.shortDescription[0]?.dietType || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'dietType', e.target.value)}
+                          placeholder="e.g., Vegetarian, Non-vegetarian"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="totalItems">Total Items</Label>
+                        <Input
+                          type="number"
+                          id="totalItems"
+                          value={formData.shortDescription[0]?.totalItems || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'totalItems', e.target.value)}
+                          placeholder="Number of items in package"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="flavor">Flavor</Label>
+                        <Input
+                          id="flavor"
+                          value={formData.shortDescription[0]?.flavor || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'flavor', e.target.value)}
+                          placeholder="e.g., Chocolate, Vanilla"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="packagingType">Packaging Type</Label>
+                        <Input
+                          id="packagingType"
+                          value={formData.shortDescription[0]?.packagingType || ''}
+                          onChange={(e) => handleNestedChange('shortDescription', 'packagingType', e.target.value)}
+                          placeholder="e.g., Box, Pouch"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Nutrition Info Section */}
+                <AccordionItem value="nutritionInfo">
+                  <AccordionTrigger className="text-md font-semibold text-slate-800 hover:no-underline">
+                    Nutrition Information
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <Label htmlFor="protien">Protein</Label>
+                        <Input
+                          id="protien"
+                          value={formData.nutritionInfo[0]?.protien || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'protien', e.target.value)}
+                          placeholder="e.g., 5g"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="fat">Fat</Label>
+                        <Input
+                          id="fat"
+                          value={formData.nutritionInfo[0]?.fat || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'fat', e.target.value)}
+                          placeholder="e.g., 2g"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="carbohydrates">Carbohydrates</Label>
+                        <Input
+                          id="carbohydrates"
+                          value={formData.nutritionInfo[0]?.carbohydrates || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'carbohydrates', e.target.value)}
+                          placeholder="e.g., 15g"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="iron">Iron</Label>
+                        <Input
+                          id="iron"
+                          value={formData.nutritionInfo[0]?.iron || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'iron', e.target.value)}
+                          placeholder="e.g., 2mg"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="calcium">Calcium</Label>
+                        <Input
+                          id="calcium"
+                          value={formData.nutritionInfo[0]?.calcium || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'calcium', e.target.value)}
+                          placeholder="e.g., 50mg"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="vitamin">Vitamin</Label>
+                        <Input
+                          id="vitamin"
+                          value={formData.nutritionInfo[0]?.vitamin || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'vitamin', e.target.value)}
+                          placeholder="e.g., Vitamin A, B, C"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="Energy">Energy</Label>
+                        <Input
+                          id="Energy"
+                          value={formData.nutritionInfo[0]?.Energy || ''}
+                          onChange={(e) => handleNestedChange('nutritionInfo', 'Energy', e.target.value)}
+                          placeholder="e.g., 120 kcal"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Important Information Section */}
+                <AccordionItem value="importantInformation">
+                  <AccordionTrigger className="text-md font-semibold text-slate-800 hover:no-underline">
+                    Important Information
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 mt-2">
+                      <div>
+                        <Label htmlFor="ingredients">Ingredients</Label>
+                        <Textarea
+                          id="ingredients"
+                          value={formData.importantInformation[0]?.ingredients || ''}
+                          onChange={(e) => handleNestedChange('importantInformation', 'ingredients', e.target.value)}
+                          placeholder="List all ingredients"
+                          className="min-h-20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="storageTips">Storage Tips</Label>
+                        <Textarea
+                          id="storageTips"
+                          value={formData.importantInformation[0]?.storageTips || ''}
+                          onChange={(e) => handleNestedChange('importantInformation', 'storageTips', e.target.value)}
+                          placeholder="Storage and handling instructions"
+                          className="min-h-20"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Product Description Media Section */}
+                <AccordionItem value="productDescription">
+                  <AccordionTrigger className="text-md font-semibold text-slate-800 hover:no-underline">
+                    Product Description Media
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-6 mt-2">
+                      {/* Product Description Images */}
+                      <div>
+                        <Label
+                          className="text-slate-700 font-medium mb-2 block"
+                          htmlFor="productDescImages"
+                        >
+                          Additional Images for Product Description
+                        </Label>
+                        
+                        {/* Existing product description images */}
+                        {existingProductDescImages.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-slate-600 mb-2">Current Description Images:</h4>
+                            <div className="flex flex-wrap gap-3">
+                              {existingProductDescImages.map((image, index) => (
+                                <div key={index} className="relative group">
+                                  <img
+                                    src={getProductImageUrl(image)}
+                                    alt={`Product description ${index + 1}`}
+                                    className="h-20 w-20 object-contain border rounded"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExistingProductDescImages(existingProductDescImages.filter((_, i) => i !== index));
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-col">
+                          <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
+                            <input
+                              type="file"
+                              id="productDescImages"
+                              name="productDescImages"
+                              onChange={handleProductDescImagesChange}
+                              accept="image/*"
+                              className="hidden"
+                              multiple
+                            />
+                            <label
+                              htmlFor="productDescImages"
+                              className="cursor-pointer flex flex-col items-center justify-center h-32"
+                            >
+                              {productDescImagesPreviews.length > 0 ? (
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                  {productDescImagesPreviews.map((preview, index) => (
+                                    <div key={index} className="relative">
+                                      <img
+                                        src={preview}
+                                        alt={`Description image ${index + 1}`}
+                                        className="h-28 object-contain"
+                                      />
+                                      <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                                        Image {index + 1}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-10 w-10 text-slate-400 mb-2"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <span className="text-slate-500">
+                                    Click to upload additional product description images
+                                  </span>
+                                </>
+                              )}
+                            </label>
+                          </div>
+                          
+                          {productDescImagesPreviews.length > 0 && (
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">
+                                {productDescImages.length} {productDescImages.length === 1 ? 'image' : 'images'} selected
+                              </p>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setProductDescImages([]);
+                                  setProductDescImagesPreviews([]);
+                                }}
+                                className="text-xs"
+                              >
+                                Clear images
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Product Description Videos */}
+                      <div>
+                        <Label
+                          className="text-slate-700 font-medium mb-2 block"
+                          htmlFor="productDescVideos"
+                        >
+                          Additional Videos for Product Description
+                        </Label>
+                        
+                        {/* Existing product description videos */}
+                        {existingProductDescVideos.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-slate-600 mb-2">Current Description Videos:</h4>
+                            <div className="flex flex-wrap gap-3">
+                              {existingProductDescVideos.map((video, index) => (
+                                <div key={index} className="relative group">
+                                  <video
+                                    src={getVideoUrl(video)}
+                                    className="h-20 w-20 object-contain border rounded"
+                                    controls
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExistingProductDescVideos(existingProductDescVideos.filter((_, i) => i !== index));
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-col">
+                          <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
+                            <input
+                              type="file"
+                              id="productDescVideos"
+                              name="productDescVideos"
+                              onChange={handleProductDescVideosChange}
+                              accept="video/*"
+                              className="hidden"
+                              multiple
+                            />
+                            <label
+                              htmlFor="productDescVideos"
+                              className="cursor-pointer flex flex-col items-center justify-center h-32"
+                            >
+                              {productDescVideosPreviews.length > 0 ? (
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                  {productDescVideosPreviews.map((preview, index) => (
+                                    <div key={index} className="relative">
+                                      <video
+                                        src={preview}
+                                        className="h-28 object-contain"
+                                        controls
+                                      />
+                                      <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                                        Video {index + 1}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="mx-auto h-12 w-12"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <span className="text-slate-500">
+                                    Click to upload additional product description videos
+                                  </span>
+                                </>
+                              )}
+                            </label>
+                          </div>
+                          
+                          {productDescVideosPreviews.length > 0 && (
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-slate-600">
+                                {productDescVideos.length} {productDescVideos.length === 1 ? 'video' : 'videos'} selected
+                              </p>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setProductDescVideos([]);
+                                  setProductDescVideosPreviews([]);
+                                }}
+                                className="text-xs"
+                              >
+                                Clear videos
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Measurements Section */}
+                <AccordionItem value="measurements">
+                  <AccordionTrigger className="text-md font-semibold text-slate-800 hover:no-underline">
+                    Measurements
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-6 mt-2">
+                      {/* Without Packaging */}
+                      <div>
+                        <h3 className="text-md font-medium text-slate-800 mb-3">Without Packaging</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <Label htmlFor="withoutHeight">Height</Label>
+                            <Input
+                              id="withoutHeight"
+                              value={formData.measurements[0]?.withoutPackaging[0]?.height || ''}
+                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'height', e.target.value)}
+                              placeholder="e.g., 10cm"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withoutWeight">Weight</Label>
+                            <Input
+                              id="withoutWeight"
+                              value={formData.measurements[0]?.withoutPackaging[0]?.weight || ''}
+                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'weight', e.target.value)}
+                              placeholder="e.g., 200g"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withoutWidth">Width</Label>
+                            <Input
+                              id="withoutWidth"
+                              value={formData.measurements[0]?.withoutPackaging[0]?.width || ''}
+                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'width', e.target.value)}
+                              placeholder="e.g., 5cm"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withoutLength">Length</Label>
+                            <Input
+                              id="withoutLength"
+                              value={formData.measurements[0]?.withoutPackaging[0]?.length || ''}
+                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'length', e.target.value)}
+                              placeholder="e.g., 15cm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* With Packaging */}
+                      <div>
+                        <h3 className="text-md font-medium text-slate-800 mb-3">With Packaging</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <Label htmlFor="withHeight">Height</Label>
+                            <Input
+                              id="withHeight"
+                              value={formData.measurements[0]?.withPackaging[0]?.height || ''}
+                              onChange={(e) => handleMeasurementChange('withPackaging', 'height', e.target.value)}
+                              placeholder="e.g., 12cm"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withWeight">Weight</Label>
+                            <Input
+                              id="withWeight"
+                              value={formData.measurements[0]?.withPackaging[0]?.weight || ''}
+                              onChange={(e) => handleMeasurementChange('withPackaging', 'weight', e.target.value)}
+                              placeholder="e.g., 250g"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withWidth">Width</Label>
+                            <Input
+                              id="withWidth"
+                              value={formData.measurements[0]?.withPackaging[0]?.width || ''}
+                              onChange={(e) => handleMeasurementChange('withPackaging', 'width', e.target.value)}
+                              placeholder="e.g., 7cm"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="withLength">Length</Label>
+                            <Input
+                              id="withLength"
+                              value={formData.measurements[0]?.withPackaging[0]?.length || ''}
+                              onChange={(e) => handleMeasurementChange('withPackaging', 'length', e.target.value)}
+                              placeholder="e.g., 17cm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </motion.div>
 
             {/* Image Upload Section */}

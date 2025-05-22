@@ -15,29 +15,45 @@ const Signup = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const handleSubmit = async (e) => {
+  const [loading, setLoading] = useState(false);  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    
     try {
       await getConfig();
-      const res = await axiosInstance.post(SIGNUP_ROUTE, {
-        firstName,
-        lastName,
-        email,
-        password,
-        phone,
-        address,
-        profileImage,
+      
+      // Create FormData object for file upload
+      const formData = new FormData();
+      formData.append("firstName", firstName);
+      formData.append("lastName", lastName);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("phone", phone);
+      formData.append("address", address);
+      if (profileImage) {
+        formData.append("image", profileImage);
+      }
+        const res = await axiosInstance.post(SIGNUP_ROUTE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
+      
       if (res && res.data.success) {
-        toast.success("Account created successfully");
-        navigate("/login");
+        toast.success("Account created successfully! You will be redirected to the login page in a moment. After logging in, you'll be able to access your customer dashboard.");
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
       } else {
-        toast.error(res.data.message);
+        toast.error(res.data.message || "Registration failed");
       }
     } catch (error) {
       console.error("Error signing up:", error);
-      toast.error("An error occurred while signing up");
+      setError(error.response?.data?.message || "An error occurred while signing up");
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

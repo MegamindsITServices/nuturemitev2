@@ -6,7 +6,7 @@ export const backendURL = config.getApiUrl();
 export const AUTH_ROUTE = 'api/auth';
 export const PRODUCT_ROUTE = 'api/product';
 export const COLLECTION_ROUTE = 'api/collections';
-export const ORDER_ROUTE = 'api/orders';
+export const ORDER_ROUTE = 'api/order';
 export const BLOG_ROUTE = 'api/blog';
 export const BANNER_ROUTE = "api/banners";
 export const CART_ROUTE = "api/cart";
@@ -55,7 +55,7 @@ export const GET_BLOG_BY_ID = `${BLOG_ROUTE}/get-blog/:id`
 
 // Order endpoints
 export const ADD_ORDER = `${ORDER_ROUTE}/add-order`
-export const GET_ORDER = `${ORDER_ROUTE}/get-orders`
+export const GET_ORDER = `${ORDER_ROUTE}/get-all-orders`
 export const GET_ORDER_BY_ID = `${ORDER_ROUTE}/get-order/:id`
 export const UPDATE_ORDER = `${ORDER_ROUTE}/update-order/:id`
 export const DELETE_ORDER = `${ORDER_ROUTE}/delete-order/:id`

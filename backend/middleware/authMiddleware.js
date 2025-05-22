@@ -29,3 +29,15 @@ export const isAdmin = async (req, res, next) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+export const isCustomer = async (req, res, next) => {
+  try {
+    const customer = await userModel.findById(req.user.id);
+    if(!customer || customer.isUser !== true) {
+      return res.status(403).json({ message: "Forbidden: Customer access required" });
+    }
+    next();
+  } catch (error) {
+    console.error("Error checking customer status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

@@ -17,6 +17,7 @@ import debugPhonepeRoute from "./routes/debugPhonepeRoute.js";
 import bannerRoute from "./routes/bannerRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 import reviewRoute from "./routes/reviewRoute.js";
+import adminRouter from "./routes/adminRoute.js";
 import Order from "./models/orderModel.js";
 // PhonePe integration is handled through our custom helper
 dotenv.config();
@@ -34,17 +35,17 @@ const databaseUrl = process.env.DATABASE_URL;
 // CORS configuration
 // app.use(
 //   cors({
-//     origin: process.env.ORIGIN || "http://localhost:5173 || https://nuturemite.info",
+//     origin: process.env.ORIGIN || "https://nuturemite.info || https://nuturemite.info",
 //     methods: ["GET", "POST", "PUT", "DELETE"],
 //     credentials: true,
 //   })
 // );
 const allowedOrigins = [
-  "http://localhost:5173",
+  "https://nuturemite.info",
   "https://nuturemite.info",
   "https://nuturemite.info/",
   "http://nuturemite.info",
-  "http://localhost:8080",
+  "https://api.nuturemite.info",
   "http://api.nuturemite.info",
   "https://api.nuturemite.info",
   "https://api.nuturemite.info/",
@@ -60,13 +61,19 @@ const corsOptions = {
     }
   },
   credentials: true,
-  // Set to true if you want to allow credentials (cookies, authorization headers, etc.)
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
-    "X-Requested-With"
-  ]
+    "X-Requested-With",
+    "muntasirul",
+    "Accept",
+    "Origin",
+    "Cache-Control",
+    "X-Auth-Token",
+    "Access-Control-Allow-Origin"
+  ],
+  exposedHeaders: ["Content-Range", "X-Content-Range"]
 };
 // Middleware
 app.use(cookieParser());
@@ -76,9 +83,12 @@ app.use(express.json());
 app.use((req,res,next)=>{
   const origin = req.headers.origin;
   if(allowedOrigins.includes(origin)){
-     res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header(
+      'Access-Control-Allow-Headers', 
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, muntasirul, Cache-Control, X-Auth-Token, Access-Control-Allow-Origin'
+    );
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     if(req.method === 'OPTIONS'){
       return res.sendStatus(200);
@@ -139,6 +149,7 @@ app.use("/api/banner", bannerRoute);
 app.use("/api/order", orderRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/reviews", reviewRoute);
+app.use("/api/admin", adminRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to Nuturemite Backend.");
 });
@@ -174,7 +185,7 @@ app.post("/api/payment/create", async (req, res) => {  try {
         customer_phone: customerInfo.phone
       },
       order_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https//nuturemite.info'}/order-success/${orderId}?order_id={order_id}`,
+        return_url: `${process.env.FRONTEND_URL || 'https://nuturemite.info'}/order-success/${orderId}?order_id={order_id}`,
         notify_url: `${process.env.BACKEND_URL || 'https://api.nuturemite.info'}/api/payment/webhook`,
         // Add necessary order data as metadata
         product_ids: cartItems.map(item => item.productId || item._id).join(','),

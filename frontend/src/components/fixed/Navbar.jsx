@@ -413,14 +413,21 @@ const Navbar = () => {
                 }
               >
                 <div className="flex flex-col space-y-1 min-w-[150px]">
-                  {auth?.user ? (
-                    <>
+                  {auth?.user ? (                    <>
                       <Link
                         to="/user/profile"
                         className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
                       >
                         My Profile
                       </Link>
+                      {auth.user.isUser && (
+                        <Link
+                          to="/customer/dashboard"
+                          className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
+                        >
+                          Customer Dashboard
+                        </Link>
+                      )}
                       {auth.user.isAdmin && (
                         <Link
                           to="/admin/dashboard"
@@ -443,9 +450,8 @@ const Navbar = () => {
                         className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
                       >
                         Login
-                      </Link>
-                      <Link
-                        to="/register"
+                      </Link>                      <Link
+                        to="/signup"
                         className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
                       >
                         Register
@@ -684,8 +690,7 @@ const Navbar = () => {
                 <div className="border-b"></div>
 
                 {!auth?.user ? (
-                  <>
-                    <Link
+                  <>                    <Link
                       to="/login"
                       className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
@@ -695,8 +700,7 @@ const Navbar = () => {
                     </Link>
                   </>
                 ) : (
-                  <>
-                    <Link
+                  <>                    <Link
                       to="/user/profile"
                       className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
@@ -704,6 +708,16 @@ const Navbar = () => {
                       <User size={18} />
                       <span>My Profile</span>
                     </Link>
+
+                    {auth.user.isUser && (
+                      <Link
+                        to="/customer/dashboard"
+                        className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span>Customer Dashboard</span>
+                      </Link>
+                    )}
 
                     {auth.user.isAdmin && (
                       <Link

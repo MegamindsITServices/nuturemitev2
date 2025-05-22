@@ -23,9 +23,13 @@ export const getConfig = async () => {
         const response = await axios.get('/api.config.json');
         const baseEndPoint = response.data.baseUrl;
         axiosInstance.defaults.baseURL = baseEndPoint;
+        console.log("Using baseURL:", baseEndPoint);
     } catch (error) {
         console.log("Error fetching config:", error);
-        // Fall back to default baseURL
-        axiosInstance.defaults.baseURL = "https://api.nuturemite.info";
+        // Fall back to default baseURL based on window location
+        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseURL = isDevelopment ? "https://api.nuturemite.info" : "https://api.nuturemite.info";
+        axiosInstance.defaults.baseURL = baseURL;
+        console.log("Using fallback baseURL:", baseURL);
     }
 }

@@ -20,25 +20,40 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const [auth, setAuth] = useAuth();
-  const handleSubmit = async (e) =>{
+  const [auth, setAuth] = useAuth();  const handleSubmit = async (e) =>{
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
     try {
-      await getConfig()
-      const res = await axiosInstance.post(LOGIN_ROUTE,{email, password})
+      await getConfig();
+      const res = await axiosInstance.post(LOGIN_ROUTE, {email, password});
+      
       if(res && res.data.success){
-        toast.success("Login successful");
-        // Ensure we have the correct structure for auth data
+        // Store auth data
         setAuth({
           user: res.data.user,
           token: res.data.token,
         });
         localStorage.setItem("auth", JSON.stringify(res.data));
-        navigate("/");
+          // Check user role and redirect accordingly
+        if (res.data.user.isAdmin) {
+          toast.success("Welcome back, Admin!");
+          navigate("/admin/dashboard");
+        } else if (res.data.user.isUser) {
+          toast.success("Welcome to your customer dashboard!");
+          navigate("/customer/dashboard");
+        } else {
+          toast.success("Login successful");
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error("Error logging in:", error);
+      setError(error.response?.data?.message || "Invalid email or password");
       toast.error("Login failed");
+    } finally {
+      setIsLoading(false);
     }
   }
 

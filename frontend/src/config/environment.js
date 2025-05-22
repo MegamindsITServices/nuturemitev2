@@ -4,13 +4,13 @@
 const config = {
   // API URL configurations
   apiUrl: {
-    development: "http://localhost:8080",
+    development: "https://api.nuturemite.info",
     production: "https://api.nuturemite.info"
   },
   
   // Image URL configurations
   imageUrl: {
-    development: "http://localhost:8080",
+    development: "https://api.nuturemite.info",
     production: "https://api.nuturemite.info"
   },
   
