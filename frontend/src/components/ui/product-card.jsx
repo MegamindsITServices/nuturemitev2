@@ -15,7 +15,9 @@ const formatPrice = (price) => {
 };
 
 const ProductCard = ({ product, priority = false }) => {
+  // console.log(product)
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [avgRating,setAvgRating]=useState(0)
   const [imageLoaded, setImageLoaded] = useState(false);
   const [cardRef, isInView] = useIntersectionObserver({
     threshold: 0.1,
@@ -26,6 +28,16 @@ const ProductCard = ({ product, priority = false }) => {
   const [auth] = useAuth();
   const [isAdding, setIsAdding] = useState(false);
   // Effect to automatically cycle through images every 3 seconds
+  useEffect(()=>{
+    let reviewsCount=0;
+    if (product.reviews && product.reviews.length > 0) {
+      reviewsCount = product.reviews.length;
+      console.log(reviewsCount)
+      const totalRating = product.reviews.reduce((sum, review) => sum + (review.reviewStars || 0), 0);
+      
+      setAvgRating(reviewsCount > 0 ? totalRating / reviewsCount : 0);
+    }
+  },[])
   useEffect(() => {
     let imageInterval;
     // Only start cycling if the product has multiple images and is in view
@@ -119,12 +131,12 @@ const ProductCard = ({ product, priority = false }) => {
 
         {/* Quick action buttons - always visible now */}
         <div className="absolute right-2 top-2 flex flex-col gap-2 z-20">
-          <button
+          {/* <button
             className="bg-white text-gray-800 p-2 rounded-full shadow hover:bg-gray-100 transition-colors"
             aria-label="Add to wishlist"
           >
             <Heart className="h-4 w-4" />
-          </button>
+          </button> */}
           <button
             className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow transition-colors"
             onClick={() => handleAddToCart(product)}
@@ -168,7 +180,7 @@ const ProductCard = ({ product, priority = false }) => {
                 key={i}
                 size={16}
                 className={`${
-                  i < Math.floor(product.rating)
+                  i < Math.floor(avgRating)
                     ? "text-yellow-400 fill-yellow-400"
                     : "text-gray-300"
                 }`}
@@ -176,7 +188,7 @@ const ProductCard = ({ product, priority = false }) => {
             ))}
           </div>
           <span className="text-xs text-gray-500 ml-2">
-            ({product.reviewCount})
+            ({Math.floor(avgRating)})
           </span>
         </div>
         <div className="flex items-center mt-auto">

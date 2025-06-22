@@ -193,7 +193,7 @@ export const getProducts = async (req, res) => {
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNumber)
-      .populate('collection', 'name slug');
+      .populate('collection', 'name slug').populate('reviews');
 
     // Get total count for pagination
     const totalProducts = await Product.countDocuments(query);

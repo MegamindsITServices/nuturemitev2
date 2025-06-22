@@ -97,7 +97,7 @@ const CustomerDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
               <Calendar className="mr-2 h-4 w-4" />
@@ -114,7 +114,7 @@ const CustomerDashboard = () => {
               }) || 'N/A'}
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Recent Orders Section */}

@@ -13,7 +13,8 @@ import ProductReviews from "../../components/product/ProductReviews";
 import ProductSpecifications from "../../components/product/ProductSpecifications";
 import { toast } from "sonner";
 
-const ProductDetail = () => {  const [product, setProduct] = useState();
+const ProductDetail = () => { 
+   const [product, setProduct] = useState();
   const [loading, setLoading] = useState(true);
   const [reviewsCount, setReviewsCount] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
@@ -117,9 +118,10 @@ const ProductDetail = () => {  const [product, setProduct] = useState();
     );
   }
 
-  const handleAddToCart = async (product) => {
+  const handleAddToCart = async () => {
     try {
       setIsAdding(true);
+      console.log(product)
       await addToCart(product);
     } catch (error) {
       console.error("Error adding product to cart:", error);

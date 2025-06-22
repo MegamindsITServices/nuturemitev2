@@ -61,11 +61,11 @@ const data = {
               link: "/customer/profile",
               isActive: false,
             },
-            {
-              title: "Update Profile",
-              link: "/customer/update-profile",
-              isActive: false,
-            },
+            // {
+            //   title: "Update Profile",
+            //   link: "/customer/update-profile",
+            //   isActive: false,
+            // },
           ],
         },
       ],
@@ -87,11 +87,11 @@ const data = {
               link: "/customer/orders",
               isActive: false,
             },
-            {
-              title: "Cancel Orders",
-              link: "/customer/cancel-orders",
-              isActive: false,
-            },
+            // {
+            //   title: "Cancel Orders",
+            //   link: "/customer/cancel-orders",
+            //   isActive: false,
+            // },
           ],
         },
       ],

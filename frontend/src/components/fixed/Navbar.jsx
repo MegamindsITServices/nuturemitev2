@@ -491,18 +491,18 @@ const Navbar = () => {
           >
             PRODUCTS
           </Link>
-          <Link
+          {/* <Link
             to="/deals"
             className="hover:text-opacity-80 transition-opacity"
           >
             DEALS
-          </Link>
-          <Link
+          </Link> */}
+          {/* <Link
             to="/for-business"
             className="hover:text-opacity-80 transition-opacity"
           >
             FOR BUSINESS
-          </Link>
+          </Link> */}
           <Link
             to="/about"
             className="hover:text-opacity-80 transition-opacity"
@@ -521,12 +521,12 @@ const Navbar = () => {
           >
             BLOGS
           </Link>
-          <Link
+          {/* <Link
             to="/Competitions"
             className="hover:text-opacity-80 transition-opacity"
           >
             COMPETITIONS
-          </Link>
+          </Link> */}
           {/* <HoverDropdown
             trigger={
               <div className="flex items-center gap-1 hover:text-opacity-80 transition-opacity">

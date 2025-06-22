@@ -1,6 +1,6 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
-    baseURL: "https://api.nuturemite.info" // Default base URL
+    baseURL: "http://localhost:8080" // Default base URL
 });
 
 // Setup axios interceptors to include auth token
@@ -28,7 +28,7 @@ export const getConfig = async () => {
         console.log("Error fetching config:", error);
         // Fall back to default baseURL based on window location
         const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const baseURL = isDevelopment ? "https://api.nuturemite.info" : "https://api.nuturemite.info";
+        const baseURL = isDevelopment ? "http://localhost:8080" : "http://localhost:8080";
         axiosInstance.defaults.baseURL = baseURL;
         console.log("Using fallback baseURL:", baseURL);
     }

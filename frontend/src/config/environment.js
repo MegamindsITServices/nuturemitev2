@@ -4,8 +4,8 @@
 const config = {
   // API URL configurations
   apiUrl: {
-    development: "https://api.nuturemite.info",
-    production: "https://api.nuturemite.info"
+    development: "http://localhost:8080",
+    production: "http://localhost:8080"
   },
   
   // Image URL configurations

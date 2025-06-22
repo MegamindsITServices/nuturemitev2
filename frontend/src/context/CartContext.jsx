@@ -63,6 +63,7 @@ const CartProvider = ({ children }) => {
 
     try {
       await getConfig();
+      console.log(product)
       const { data } = await axiosInstance.post(ADD_TO_CART, {
         userId: auth.user.userId,
         productId: product._id,

@@ -56,19 +56,19 @@ const Profile = () => {
                   <p className="font-medium">{auth.user.email}</p>
                 </div>
 
-                <div>
+                {/* <div>
                   <h3 className="text-sm text-gray-500">Account Type</h3>
                   <p className="font-medium">
                     {auth.user.isAdmin }
                   </p>
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <h3 className="text-sm text-gray-500">Member Since</h3>
                   <p className="font-medium">
                     {new Date(auth.user.createdAt).toLocaleDateString()}
                   </p>
-                </div>
+                </div> */}
               </div>
 
               <div className="space-x-4">
@@ -90,7 +90,7 @@ const Profile = () => {
 
           <hr className="my-8" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="font-bold mb-3 text-lg">Order History</h3>
               <p className="text-gray-600">View your recent orders and track deliveries.</p>
@@ -125,7 +125,7 @@ const Profile = () => {
                 </button>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -16,15 +16,17 @@ import {
 import Breadcrumb from '../../components/common/Breadcrumb';
 import { getProductImageUrl } from '../../utils/imageUtils';
 import { paymentService } from '../../services/paymentService';
+import { axiosInstance } from '../../utils/request';
+import axios from 'axios';
 
 const Checkout = () => {
   const [auth] = useAuth();
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
   const navigate = useNavigate();
-  
+
   // Form state
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: auth?.user?.name || '',
+    fullName: auth?.user?.firstName || '',
     address: '',
     city: '',
     state: '',
@@ -35,6 +37,32 @@ const Checkout = () => {
     email: auth?.user?.email || '',
     phone: '',
   });
+
+  useEffect(()=>{
+    const call=async()=>{
+      const {data}=await axiosInstance.post('/api/user/getShippingAddress',{
+      _id:auth.user.userId
+    });
+      console.log(data);
+      if(data.shippingAddress.shippingAddress){
+        setShippingAddress({
+          fullName:data.shippingAddress.shippingAddress.fullName,
+          address:data.shippingAddress.shippingAddress.streetAddress,
+          city:data.shippingAddress.shippingAddress.city,
+          state:data.shippingAddress.shippingAddress.state,
+          postalCode:data.shippingAddress.shippingAddress.pincode,
+          country:data.shippingAddress.shippingAddress.country
+        })
+        setContactInfo({
+          email:data.shippingAddress.shippingAddress.emailAddress,
+          phone:data.shippingAddress.shippingAddress.phoneNumber
+        })
+      }
+    }
+   if(auth.user){
+    call();
+   }
+  },[auth ])
   // Payment state
   const [paymentSessionId, setPaymentSessionId] = useState('');
   const [orderId, setOrderId] = useState('');
@@ -154,6 +182,20 @@ const Checkout = () => {
           const response = await paymentService.createCodOrder(orderData);
           
           if (response.success) {
+           const shippingAddressinfo={
+    fullName:shippingAddress.fullName,
+    emailAddress:contactInfo.email,
+    phoneNumber:contactInfo.phone,
+    streetAddress:shippingAddress.address,
+    city:shippingAddress.city,
+    state:shippingAddress.state,
+    pincode:shippingAddress.postalCode,
+    country:shippingAddress.country 
+  }
+   await axiosInstance.post('/api/user/saveShippingAddress',{
+     shippingAddress:shippingAddressinfo,
+     _id:auth.user.userId
+   });
             // Clear cart and redirect to success page
             await paymentService.clearCart(auth.user.userId);
             toast.success('Order placed successfully!');

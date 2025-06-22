@@ -46,8 +46,42 @@ const userSchema = new mongoose.Schema({
     cart: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
-    }]
-}, {timestamps:true})
+    }],
+    shippingAddress:{
+        fullName:{
+            type:String,
+           
+        },
+        emailAddress:{
+            type:String,
+           
+        },
+        phoneNumber:{
+            type:String,
+           
+        },
+        streetAddress:{
+            type:String,
+           
+        },
+        city:{
+            type:String,
+           
+        },
+        state:{
+            type:String,
+           
+        },
+        pincode:{
+            type:String,
+           
+        },
+        country:{
+            type:String,
+            defaule:"India"
+        }
+    }
+}, {timestamps:true,strict:false})
 
 // Removed the pre-save hook as we're already hashing the password in authController.js
 
