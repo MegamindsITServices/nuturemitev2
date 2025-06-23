@@ -4,7 +4,7 @@ import Order from "../models/orderModel.js";
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .populate("products")
+      .populate("products.product")
       .populate("buyer")
       .limit(10)
       .sort({ createdAt: -1 }); // Changed to sort by newest first
@@ -25,7 +25,7 @@ export const getAllOrders = async (req, res) => {
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate("products")
+      .populate("products.product")
       .populate("buyer");
 
     if (!order) {
@@ -62,7 +62,7 @@ export const getOrderByUser = async (req, res) => {
     }
 
     const orders = await Order.find({ buyer: userId })
-      .populate("products")
+      .populate("products.product")
       .populate("buyer")
       .sort({ createdAt: -1 });
 
@@ -95,7 +95,7 @@ export const getUserOrders = async (req, res) => {
     }
 
     const orders = await Order.find({ buyer: userId })
-      .populate("products")
+      .populate("products.product")
       .populate("buyer")
       .sort({ createdAt: -1 }); // Sort by newest first
 
@@ -153,7 +153,7 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
     });
     await newOrder.save();
     const orderData = await Order.findById(newOrder._id)
-      .populate("products")
+      .populate("products.product")
       .populate("buyer");
     const response = await createXpressBeesOrder(orderData);
     console.log(response);
@@ -198,7 +198,7 @@ export const updateOrder = async (req, res) => {
 
     // Return the updated order with populated fields
     const populatedOrder = await Order.findById(updatedOrder._id)
-      .populate("products")
+      .populate("products.product")
       .populate("buyer");
 
     res.status(200).send({
@@ -279,7 +279,7 @@ export const getCancelOrder = async (req, res) => {
 
     // Return the updated order
     const updatedOrder = await Order.findById(orderId)
-      .populate("products")
+      .populate("products.product")
       .populate("buyer");
 
     res.status(200).json({

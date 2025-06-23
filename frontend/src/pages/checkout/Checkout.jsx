@@ -186,7 +186,7 @@ const Checkout = () => {
         try {
           // Create a direct order without payment processing
           const orderData = {
-            products: cartItems.map((item) => item.productId),
+            products: cartItems.map((item) =>({productId: item.productId,quantity:item.quantity})),
             buyer: auth.user.userId,
             address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
             phone: contactInfo.phone,

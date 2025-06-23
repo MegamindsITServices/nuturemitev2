@@ -234,7 +234,7 @@ app.post("/api/payment/create", async (req, res) => {
         order_id: orderId,
         // Save these details temporarily - we'll save them properly after payment succeeds
         orderData: {
-          products: cartItems.map((item) => item.productId || item._id),
+          products: cartItems.map((item) => ({productId:item.productId,quantity:item.quantity })|| ({productId:item._id,quantity:item.quantity })),
           productName: cartItems.map((item) => item.name).join(", "),
           buyer: customerInfo.userId,
           address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
