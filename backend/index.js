@@ -20,7 +20,7 @@ import reviewRoute from "./routes/reviewRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import Order from "./models/orderModel.js";
 import User from "./models/userModel.js";
-import EnquiryMessageRoute from "./routes/EnquiryMessageRoute.js"
+import EnquiryMessageRoute from "./routes/EnquiryMessageRoute.js";
 // PhonePe integration is handled through our custom helper
 dotenv.config();
 const app = express();
@@ -32,7 +32,6 @@ const databaseUrl = process.env.DATABASE_URL;
 // MERCHANT_ID = "M228EY1054QWH"
 // SALT_INDEX = 1
 // API_KEY = "6867369a-26d1-4748-94de-bdc7a1013bf8"
-
 
 // CORS configuration
 // app.use(
@@ -53,8 +52,7 @@ const allowedOrigins = [
   "https://api.nuturemite.info/",
   "http://localhost:5173",
   undefined,
-
-]
+];
 const corsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.includes(origin)) {
@@ -74,31 +72,34 @@ const corsOptions = {
     "Origin",
     "Cache-Control",
     "X-Auth-Token",
-    "Access-Control-Allow-Origin"
+    "Access-Control-Allow-Origin",
   ],
-  exposedHeaders: ["Content-Range", "X-Content-Range"]
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
 };
 // Middleware
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if(allowedOrigins.includes(origin)){
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
     res.header(
-      'Access-Control-Allow-Headers', 
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, muntasirul, Cache-Control, X-Auth-Token, Access-Control-Allow-Origin'
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization, muntasirul, Cache-Control, X-Auth-Token, Access-Control-Allow-Origin"
     );
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    if(req.method === 'OPTIONS'){
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    if (req.method === "OPTIONS") {
       return res.sendStatus(200);
     }
   }
-  next()
-})
+  next();
+});
 
 // We'll use helper functions to interact with PhonePe APIs directly
 // Set up __dirname equivalent in ES modules
@@ -116,7 +117,7 @@ app.use("/image", express.static(path.join(__dirname, "uploads")));
 app.use("/profile", express.static(path.join(__dirname, "profile")));
 app.use("/banner", express.static(path.join(__dirname, "banner")));
 app.use("/test", express.static(path.join(__dirname, "public")));
-app.use("/blog", express.static(path.join(__dirname, "blogs")));  // Fixed path for blog images
+app.use("/blog", express.static(path.join(__dirname, "blogs"))); // Fixed path for blog images
 app.use("/blogs", express.static(path.join(__dirname, "blogs"))); // Keep for backward compatibility
 app.use("/blogVideos", express.static(path.join(__dirname, "blogs/videos"))); // Path for blog videos
 app.use("/videos", express.static(path.join(__dirname, "uploads"))); // Direct access to videos in uploads folder
@@ -153,20 +154,23 @@ app.use("/api/order", orderRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/reviews", reviewRoute);
 app.use("/api/admin", adminRouter);
-app.use("/api/user/enquiry",EnquiryMessageRoute)
-app.post('/api/user/saveShippingAddress',async(req,res)=>{
-  const {shippingAddress,_id}=req.body;
-const data= await User.findByIdAndUpdate({_id},{shippingAddress});
-console.log(data)
- return res.status(200);
+app.use("/api/user/enquiry", EnquiryMessageRoute);
+app.post("/api/user/saveShippingAddress", async (req, res) => {
+  const { shippingAddress, _id } = req.body;
+  const data = await User.findByIdAndUpdate({ _id }, { shippingAddress });
+  console.log(data);
+  return res.status(200).json({
+    success: true,
+    message: "Shipping address saved successfully",
+  });
 });
 
-app.post('/api/user/getShippingAddress',async(req,res)=>{
-  const {_id}=req.body; 
-  const shippingAddress=await User.findById(_id);
-  console.log(shippingAddress)
-  return res.json({shippingAddress});
-})
+app.post("/api/user/getShippingAddress", async (req, res) => {
+  const { _id } = req.body;
+  const shippingAddress = await User.findById(_id);
+  console.log(shippingAddress);
+  return res.json({ shippingAddress });
+});
 app.get("/", (req, res) => {
   res.send("Welcome to Nuturemite Backend.");
 });
@@ -174,21 +178,22 @@ app.get("/", (req, res) => {
 import { generateOrderId } from "./helpers/paymentHelper.js";
 import blogRouter from "./routes/blogRoute.js";
 
-app.post("/api/payment/create", async (req, res) => {  try {
+app.post("/api/payment/create", async (req, res) => {
+  try {
     const { cartItems, customerInfo, totalAmount, shippingAddress } = req.body;
-    
+
     if (!cartItems || !customerInfo || !totalAmount) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Missing required information" 
+        message: "Missing required information",
       });
     }
-    
+
     const orderId = await generateOrderId();
-    
+
     // Import the helper function
-    const { createPhonePeOrder } = await import('./helpers/phonepeHelper.js');
-    
+    const { createPhonePeOrder } = await import("./helpers/phonepeHelper.js");
+
     // Prepare order data for PhonePe
     // Include additional metadata in order_meta to help with order creation later
     const orderData = {
@@ -199,23 +204,28 @@ app.post("/api/payment/create", async (req, res) => {  try {
         customer_id: customerInfo.userId || "guest_user",
         customer_name: customerInfo.name,
         customer_email: customerInfo.email,
-        customer_phone: customerInfo.phone
+        customer_phone: customerInfo.phone,
       },
       order_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https://nuturemite.info'}/order-success/${orderId}?order_id={order_id}`,
-        notify_url: `${process.env.BACKEND_URL || 'https://api.nuturemite.info'}/api/payment/webhook`,
+        return_url: `${
+          process.env.FRONTEND_URL || "https://nuturemite.info"
+        }/order-success/${orderId}?order_id={order_id}`,
+        notify_url: `${
+          process.env.BACKEND_URL || "https://api.nuturemite.info"
+        }/api/payment/webhook`,
         // Add necessary order data as metadata
-        product_ids: cartItems.map(item => item.productId || item._id).join(','),
-        product_names: cartItems.map(item => item.name).join(', '),
-        shipping_address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`
-      }
+        product_ids: cartItems
+          .map((item) => item.productId || item._id)
+          .join(","),
+        product_names: cartItems.map((item) => item.name).join(", "),
+        shipping_address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
+      },
     };
-      // Create order with PhonePe
+    // Create order with PhonePe
     const phonePeResponse = await createPhonePeOrder(orderData);
-      if (phonePeResponse && phonePeResponse.success) {
+    if (phonePeResponse && phonePeResponse.success) {
       console.log("Payment session created successfully:", phonePeResponse);
-      
-      
+
       // Return the payment session details to the frontend
       res.status(200).json({
         success: true,
@@ -224,23 +234,27 @@ app.post("/api/payment/create", async (req, res) => {  try {
         order_id: orderId,
         // Save these details temporarily - we'll save them properly after payment succeeds
         orderData: {
-          products: cartItems.map(item => item.productId || item._id),
-          productName: cartItems.map(item => item.name).join(', '),
+          products: cartItems.map((item) => item.productId || item._id),
+          productName: cartItems.map((item) => item.name).join(", "),
           buyer: customerInfo.userId,
           address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
           phone: customerInfo.phone,
-          totalPrice: totalAmount
-        }
-      });    } else {
+          totalPrice: totalAmount,
+        },
+      });
+    } else {
       console.error("Payment creation failed:", phonePeResponse);
-      res.status(400).json({ 
+      res.status(400).json({
         success: false,
         message: phonePeResponse.message || "Failed to create payment session",
-        code: phonePeResponse.code || "ERROR" 
+        code: phonePeResponse.code || "ERROR",
       });
     }
   } catch (error) {
-    console.log("Payment creation error:", error.response ? error.response.data : error.message);
+    console.log(
+      "Payment creation error:",
+      error.response ? error.response.data : error.message
+    );
     res.status(500).json({
       success: false,
       message: "Failed to create payment",
@@ -249,196 +263,223 @@ app.post("/api/payment/create", async (req, res) => {  try {
   }
 });
 app.post("/api/payment/verify", async (req, res) => {
-    try {
-        const {orderId} = req.body;
-        
-        if (!orderId) {
-            return res.status(400).json({
-                success: false,
-                message: "Order ID is required"
-            });
-        }
-          // Import the helper function
-        const { getPhonePeOrderStatus } = await import('./helpers/phonepeHelper.js');
-        
-        try {
-            // Get payment status from PhonePe
-            const paymentData = await getPhonePeOrderStatus(orderId);
-            
-            // Check payment status
-            if (paymentData && paymentData.order_status === "PAID") {
-                // Find if an order with this transaction ID already exists
-                let order = await Order.findOne({ "payment.transactionId": orderId });
-                
-                // If order doesn't exist, create it now (only for successful payments)
-                if (!order) {
-                    // We need to retrieve the saved order data from the original payment creation
-                    // In a production system, you'd store this in Redis or another temporary store
-                    // For this implementation, we'll get data from the payment gateway response
-                    
-                    // Create a new order
-                    const newOrder = new Order({
-                        products: paymentData.order_meta?.product_ids ? paymentData.order_meta.product_ids.split(',') : [],
-                        productName: paymentData.order_meta?.product_names || 'Order Items',
-                        buyer: paymentData.customer_details.customer_id,
-                        address: paymentData.order_meta?.shipping_address || 'Address from payment data',
-                        phone: paymentData.customer_details.customer_phone,                        totalPrice: paymentData.order_amount,
-                        payment: {
-                            method: 'PhonePe',
-                            transactionId: orderId,
-                            status: 'Completed',
-                            responseData: paymentData
-                        },
-                        status: 'Processing'
-                    });
-                    
-                    order = await newOrder.save();
-                    
-                } else {
-                    // Update existing order payment status
-                    order.payment = {
-                        ...order.payment,
-                        status: 'Completed',
-                        responseData: paymentData
-                    };
-                    
-                    // Update order status
-                    order.status = 'Processing';
-                    
-                    await order.save();
-                }
-                
-                res.json({
-                    success: true,
-                    message: "Payment verified successfully",
-                    paymentData,
-                    order
-                });
-            } else {
-                // Payment failed or is pending
-                // Check if we already created an order for this transaction
-                const existingOrder = await Order.findOne({ "payment.transactionId": orderId });
-                
-                if (existingOrder) {
-                    // If an order exists, update it to failed status
-                    existingOrder.payment = {
-                        ...existingOrder.payment,
-                        status: 'Failed',
-                        responseData: paymentData
-                    };
-                    
-                    // Don't change order status - we'll either cancel it or let admin handle it
-                    await existingOrder.save();
-                    
-                    res.json({
-                        success: false,
-                        message: "Payment verification failed",
-                        paymentData,
-                        order: existingOrder
-                    });
-                } else {
-                    // No order was created, which is what we want for failed payments
-                    res.json({
-                        success: false,
-                        message: "Payment verification failed",
-                        paymentData
-                    });
-                }
-            }
-        } catch (error) {
-            console.error("Error verifying payment:", error);
-            res.status(500).json({
-                success: false,                message: "Error verifying payment with PhonePe",
-                error: error.response?.data || error.message
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error in payment verification",
-            error: error.message
-        });
+  try {
+    const { orderId } = req.body;
+    const orderData = await Order.findById(orderId);
+    // check if order payment type is cod
+    if (orderData && orderData.payment.method === "Cash on Delivery") {
+      return res.status(200).json({
+        success: true,
+        message: "Order is Cash on Delivery, no payment verification needed",
+        order: orderData,
+      });
     }
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID is required",
+      });
+    }
+    // Import the helper function
+    const { getPhonePeOrderStatus } = await import(
+      "./helpers/phonepeHelper.js"
+    );
+
+    try {
+      // Get payment status from PhonePe
+      const paymentData = await getPhonePeOrderStatus(orderId);
+
+      // Check payment status
+      if (paymentData && paymentData.order_status === "PAID") {
+        // Find if an order with this transaction ID already exists
+        let order = await Order.findOne({ "payment.transactionId": orderId });
+
+        // If order doesn't exist, create it now (only for successful payments)
+        if (!order) {
+          // We need to retrieve the saved order data from the original payment creation
+          // In a production system, you'd store this in Redis or another temporary store
+          // For this implementation, we'll get data from the payment gateway response
+
+          // Create a new order
+          const newOrder = new Order({
+            products: paymentData.order_meta?.product_ids
+              ? paymentData.order_meta.product_ids.split(",")
+              : [],
+            productName: paymentData.order_meta?.product_names || "Order Items",
+            buyer: paymentData.customer_details.customer_id,
+            address:
+              paymentData.order_meta?.shipping_address ||
+              "Address from payment data",
+            phone: paymentData.customer_details.customer_phone,
+            totalPrice: paymentData.order_amount,
+            payment: {
+              method: "PhonePe",
+              transactionId: orderId,
+              status: "Completed",
+              responseData: paymentData,
+            },
+            status: "Processing",
+          });
+
+          order = await newOrder.save();
+        } else {
+          // Update existing order payment status
+          order.payment = {
+            ...order.payment,
+            status: "Completed",
+            responseData: paymentData,
+          };
+
+          // Update order status
+          order.status = "Processing";
+
+          await order.save();
+        }
+
+        res.json({
+          success: true,
+          message: "Payment verified successfully",
+          paymentData,
+          order,
+        });
+      } else {
+        // Payment failed or is pending
+        // Check if we already created an order for this transaction
+        const existingOrder = await Order.findOne({
+          "payment.transactionId": orderId,
+        });
+
+        if (existingOrder) {
+          // If an order exists, update it to failed status
+          existingOrder.payment = {
+            ...existingOrder.payment,
+            status: "Failed",
+            responseData: paymentData,
+          };
+
+          // Don't change order status - we'll either cancel it or let admin handle it
+          await existingOrder.save();
+
+          res.json({
+            success: false,
+            message: "Payment verification failed",
+            paymentData,
+            order: existingOrder,
+          });
+        } else {
+          // No order was created, which is what we want for failed payments
+          res.json({
+            success: false,
+            message: "Payment verification failed",
+            paymentData,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error verifying payment with PhonePe",
+        error: error.response?.data || error.message,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error in payment verification",
+      error: error.message,
+    });
+  }
 });
 
 // Webhook endpoint for PhonePe payment notifications
 app.post("/api/payment/webhook", async (req, res) => {
   try {
-    const event = req.body;    console.log("Received webhook from PhonePe:", event);
-    
+    const event = req.body;
+    console.log("Received webhook from PhonePe:", event);
+
     // Validate the webhook signature (recommended in production)
     // const signature = req.headers["x-verify"];
     // if (!validateWebhookSignature(event, signature, process.env.PHONEPE_WEBHOOK_SECRET)) {
     //   return res.status(401).json({ success: false, message: "Invalid signature" });
     // }
-    
+
     if (event && event.data && event.data.order_id) {
       const orderId = event.data.order_id;
       const orderStatus = event.data.order_status;
-      
+
       // For successful payments, create or update the order
       if (orderStatus === "PAID") {
         // Check if order already exists
         let order = await Order.findOne({ "payment.transactionId": orderId });
-        
+
         if (!order) {
           // Create a new order for successful payments
           const newOrder = new Order({
-              products: event.data.order_meta?.product_ids ? event.data.order_meta.product_ids.split(',') : [],
-              productName: event.data.order_meta?.product_names || 'Order Items',
-              buyer: event.data.customer_details.customer_id,
-              address: event.data.order_meta?.shipping_address || 'Address from webhook data',
-              phone: event.data.customer_details.customer_phone,
-              totalPrice: event.data.order_amount,              payment: {
-                  method: 'PhonePe',
-                  transactionId: orderId,
-                  status: 'Completed',
-                  responseData: event.data
-              },
-              status: 'Processing'
+            products: event.data.order_meta?.product_ids
+              ? event.data.order_meta.product_ids.split(",")
+              : [],
+            productName: event.data.order_meta?.product_names || "Order Items",
+            buyer: event.data.customer_details.customer_id,
+            address:
+              event.data.order_meta?.shipping_address ||
+              "Address from webhook data",
+            phone: event.data.customer_details.customer_phone,
+            totalPrice: event.data.order_amount,
+            payment: {
+              method: "PhonePe",
+              transactionId: orderId,
+              status: "Completed",
+              responseData: event.data,
+            },
+            status: "Processing",
           });
-          
+
           await newOrder.save();
           console.log(`New order created for payment ${orderId}`);
         } else {
           // Update existing order
           order.payment = {
             ...order.payment,
-            status: 'Completed',
-            responseData: event.data
+            status: "Completed",
+            responseData: event.data,
           };
-          order.status = 'Processing';
-          
+          order.status = "Processing";
+
           await order.save();
           console.log(`Order ${orderId} updated to ${orderStatus}`);
         }
       } else if (orderStatus === "FAILED" || orderStatus === "CANCELLED") {
         // For failed payments, check if we already have an order
         const order = await Order.findOne({ "payment.transactionId": orderId });
-        
+
         if (order) {
           // If order exists, mark it as failed
           order.payment = {
             ...order.payment,
-            status: 'Failed',
-            responseData: event.data
+            status: "Failed",
+            responseData: event.data,
           };
-          
+
           await order.save();
           console.log(`Order ${orderId} marked as failed or cancelled`);
         } else {
           // No order to update, which is what we want for failed payments
-          console.log(`No order found for failed payment ${orderId}, which is expected`);
+          console.log(
+            `No order found for failed payment ${orderId}, which is expected`
+          );
         }
       }
     }
-    
+
     // Always return 200 for webhooks
     res.status(200).json({ success: true, message: "Webhook processed" });
   } catch (error) {
     console.error("Webhook processing error:", error);
     // Still return 200 so Cashfree doesn't retry
-    res.status(200).json({ success: false, message: "Error processing webhook" });
+    res
+      .status(200)
+      .json({ success: false, message: "Error processing webhook" });
   }
 });
 
