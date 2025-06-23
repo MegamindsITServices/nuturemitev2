@@ -15,7 +15,7 @@ import {
   SidebarRail,
 } from "../ui/sidebar";
 import { LogoArea } from "./LogoArea";
-import { BookOpen, Box, ChevronDown, ImagePlay, Layout, Newspaper, ShieldUser, Truck } from "lucide-react";
+import { BookOpen, Box, ChevronDown, ImagePlay, Layout, Newspaper, ShieldUser, Truck, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Collapsible,
@@ -169,6 +169,26 @@ const data = {
               link: "/admin/Payment-details",
               isActive: false,
             },
+          ],
+        },
+      ],
+    },{
+      title: "Enquiry",
+      link: "#",
+      isGroup: true,
+      groupTitle: "Enquiry",
+      isActive: false,
+      collapsibles: [
+        {
+          title: "Enquiry Management",
+          icon: <HelpCircle />,
+          isActive: false,
+          items: [            {
+              title: "Enquery Messages",
+              link: "/admin/allEnquiry",
+              isActive: false,
+            },
+          
           ],
         },
       ],

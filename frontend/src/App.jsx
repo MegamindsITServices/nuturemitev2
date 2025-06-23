@@ -52,6 +52,7 @@ import Faqs from "./pages/company/Faqs";
 import ReturnAndRefund from "./pages/company/ReturnAndRefund";
 import CustomerOrders from "./pages/CustomerDashboard/orders/CustomerOrders";
 import EditProfile from "./components/ui/EditProfile";
+import AllEnquiry from "./pages/Dashboard/enquiry/AllEnquiry";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -119,6 +120,7 @@ const App = () => {
             <Route path="orders/:orderId" element={<OrderDetail />} />
             <Route path="add-blog" element={<AddBlog />} />
             <Route path="blogs" element={<ViewBlog />} />
+            <Route path="allEnquiry" element={<AllEnquiry/>}/>
           </Route>
         </Route>        {/* Customer Dashboard */}
         <Route element={<CustomerProtectedRoute/>}>

@@ -47,10 +47,28 @@ export const userData=async(req,res)=>{
   try{
    const {_id}=req.body;
 
-   const data=await User.findOne({_id});
-   
+   const data=await User.findOne({_id}).select('firstName lastName email');
+   if(data){
+    res.json({status:true, data});
+    return ;
+   }
+   res.json({status:false,message:"Cannot update profile at the moment. Try again later"});
+
   }catch(err){
     console.log(err.message)
+  }
+}
+
+export const updateProfile=async(req,res)=>{
+  try{
+   const {_id,firstName,lastName,email}=req.body;
+   const response=await User.findOneAndUpdate({_id},{firstName,lastName,email});
+   if(response){
+    return res.json({status:true,response});
+   }
+   return res.json({status:false});
+  }catch(err){
+    console.log(err.message);
   }
 }
 // Modified signup controller

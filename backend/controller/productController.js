@@ -522,7 +522,7 @@ export const getProductsByCollectionId = async (req, res) => {
     // Get products by collection ID with a limit
     const products = await Product.find({ collection: collectionId })
       .limit(8) // Limit to 8 products for related products section
-      .populate('collection', 'name slug')
+      .populate('collection', 'name slug').populate('reviews')
       .sort({ createdAt: -1 }); // Show newest first
     
     res.status(200).json({
