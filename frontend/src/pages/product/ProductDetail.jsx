@@ -309,12 +309,12 @@ const ProductDetail = () => {
             >
               <ShoppingBag className="mr-2 h-5 w-5" /> Add to Bag
             </Button>
-            <Button
+            {/* <Button
               variant="outline"
               className="py-6 px-4 border-gray-300 hover:bg-gray-50"
             >
               <Heart className="h-5 w-5" /> Save to Wishlist
-            </Button>
+            </Button> */}
           </div>{" "}
           {/* Product Description */}
           {product.description && (

@@ -20,6 +20,7 @@ import reviewRoute from "./routes/reviewRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import Order from "./models/orderModel.js";
 import User from "./models/userModel.js";
+import EnquiryMessageRoute from "./routes/EnquiryMessageRoute.js"
 // PhonePe integration is handled through our custom helper
 dotenv.config();
 const app = express();
@@ -152,7 +153,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/reviews", reviewRoute);
 app.use("/api/admin", adminRouter);
-
+app.use("/api/user/enquiry",EnquiryMessageRoute)
 app.post('/api/user/saveShippingAddress',async(req,res)=>{
   const {shippingAddress,_id}=req.body;
 const data= await User.findByIdAndUpdate({_id},{shippingAddress});

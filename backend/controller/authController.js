@@ -43,7 +43,16 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+export const userData=async(req,res)=>{
+  try{
+   const {_id}=req.body;
 
+   const data=await User.findOne({_id});
+   
+  }catch(err){
+    console.log(err.message)
+  }
+}
 // Modified signup controller
 export const signup = async (req, res) => {
   try {

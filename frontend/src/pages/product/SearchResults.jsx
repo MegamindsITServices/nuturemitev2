@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { axiosInstance, getConfig } from "../../utils/request";
 import { GET_PRODUCT_BY_SEARCH } from "../../lib/api-client";
 import { ChevronLeft, ChevronRight, Filter, SlidersHorizontal } from "lucide-react";
@@ -154,9 +154,10 @@ const SearchResults = () => {
                 key={product._id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
-                <div 
+                <Link to={`/product/${product.slug}`}>
+                 <div 
                   className="cursor-pointer"
-                  onClick={() => navigate(`/products/${product._id}`)}
+                  // onClick={() => navigate(`/products/${product._id}`)}
                 >
                   <div className="aspect-square overflow-hidden">
                     {product.images && product.images[0] ? (
@@ -194,6 +195,8 @@ const SearchResults = () => {
                     </div>
                   </div>
                 </div>
+                </Link>
+               
               </div>
             ))}
           </div>

@@ -188,7 +188,7 @@ const LoginForm = () => {
         <div className="text-center space-y-2">
           <p className="text-sm">
             Don't have an account?{' '}
-            <a href="/register" className="text-primary font-medium hover:underline">
+            <a href="/signup" className="text-primary font-medium hover:underline">
               Sign up
             </a>
           </p>

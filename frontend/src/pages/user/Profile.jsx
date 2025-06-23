@@ -73,7 +73,7 @@ const Profile = () => {
 
               <div className="space-x-4">
                 <Button
-                  onClick={() => navigate('/edit-profile')}
+                  onClick={() => navigate(`/user/edit-profile?userId=${auth.user.userId}`)}
                   className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Edit Profile

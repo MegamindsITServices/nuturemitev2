@@ -51,7 +51,7 @@ import CustomerOrderDetail from "./pages/CustomerDashboard/orders/CustomerOrderD
 import Faqs from "./pages/company/Faqs";
 import ReturnAndRefund from "./pages/company/ReturnAndRefund";
 import CustomerOrders from "./pages/CustomerDashboard/orders/CustomerOrders";
-
+import EditProfile from "./components/ui/EditProfile";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -101,6 +101,7 @@ const App = () => {
         <Route path="/test-payment" element={<TestPayment />} />
         {/* User Profile Route */}
         <Route path="/user/profile" element={<Profile />} />
+        <Route path="/user/edit-profile" element={<EditProfile/>}/>
         <Route path="/orders" element={<Orders />} />
         {/* Admin Dashboard Routes */}
         <Route element={<AdminProtectedRoute />}>

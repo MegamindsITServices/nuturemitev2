@@ -91,9 +91,9 @@ const Footer = () => {
                   Help & FAQs
                 </Link>
               </li><li>
-                <Link to="/return-and-refund" className="text-gray-400 hover:text-white text-sm">
+                {/* <Link to="/return-and-refund" className="text-gray-400 hover:text-white text-sm">
                   Return & Refund Policy
-                </Link>
+                </Link> */}
               </li>
               <li>
                 <Link
@@ -124,12 +124,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link
+                {/* <Link
                   to="/combos"
                   className="text-gray-400 hover:text-white text-sm"
                 >
                   Combos
-                </Link>
+                </Link> */}
               </li>
               <li>
                 <Link
