@@ -293,7 +293,7 @@ const AllOrders = () => {
   };
   // View order details
   const viewOrderDetails = (orderId) => {
-    navigate(`/dashboard/orders/${orderId}`);
+    navigate(`/admin/orders/${orderId}`);
   };
 
   if (loading && page === 1) {
@@ -326,6 +326,36 @@ const AllOrders = () => {
       // If products aren't populated objects, just show the count
       return `${products.length} product(s)`;
     }
+  };
+
+  // Helper function to filter and sort orders
+  const getFilteredSortedOrders = () => {
+    let filtered = [...orders];
+
+    // Filter by status
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((order) => order.status === filterStatus);
+    }
+
+    // Sort
+    switch (sortOption) {
+      case "-createdAt":
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "createdAt":
+        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "-totalPrice":
+        filtered.sort((a, b) => b.totalPrice - a.totalPrice);
+        break;
+      case "totalPrice":
+        filtered.sort((a, b) => a.totalPrice - b.totalPrice);
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
   };
 
   return (
@@ -455,21 +485,20 @@ const AllOrders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {" "}
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={11} className="text-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
-              ) : orders.length === 0 ? (
+              ) : getFilteredSortedOrders().length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={11} className="text-center py-8">
                     No orders found
                   </TableCell>
                 </TableRow>
               ) : (
-                orders.map((order) => (
+                getFilteredSortedOrders().map((order) => (
                   <TableRow key={order._id} className="hover:bg-muted/50">
                     <TableCell className="font-medium">
                       {order._id.substring(order._id.length - 8)}
@@ -590,7 +619,7 @@ const AllOrders = () => {
 
       {/* Status Update Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white">
           <DialogHeader>
             <DialogTitle>Update Order Status</DialogTitle>
             <DialogDescription>
@@ -598,7 +627,7 @@ const AllOrders = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="py-4 mb-4">
             <Select value={newStatus} onValueChange={setNewStatus}>
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
@@ -624,10 +653,8 @@ const AllOrders = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Product Details Dialog */}
       <Dialog open={productDetailsOpen} onOpenChange={setProductDetailsOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-xl bg-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShoppingBag className="h-5 w-5" />
@@ -648,6 +675,9 @@ const AllOrders = () => {
                 {selectedProducts.map((product, index) => {
                   // Check if product is a populated object or just an ID
                   const isPopulated = typeof product !== "string";
+                  // If your schema is { product, quantity }, adjust accordingly:
+                  // const prod = isPopulated ? product.product : product;
+                  // const quantity = isPopulated ? product.quantity : 1;
 
                   return (
                     <Card key={index} className="overflow-hidden">
@@ -661,7 +691,9 @@ const AllOrders = () => {
                                   src={
                                     product.images[0].startsWith("http")
                                       ? product.images[0]
-                                      : `${process.env.REACT_APP_API}/${product.images[0]}`
+                                      : `${import.meta.env.VITE_API}/${
+                                          product.images[0]
+                                        }`
                                   }
                                   alt={product.name}
                                   className="w-full h-auto rounded-md object-cover aspect-square"
@@ -690,7 +722,7 @@ const AllOrders = () => {
                                 <div>
                                   <p className="text-sm font-medium">Price:</p>
                                   <p className="text-sm">
-                                    ₹{product.price.toFixed(2)}
+                                    ₹{product.price?.toFixed(2) ?? "N/A"}
                                   </p>
                                 </div>
 

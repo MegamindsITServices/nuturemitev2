@@ -53,6 +53,7 @@ import ReturnAndRefund from "./pages/company/ReturnAndRefund";
 import CustomerOrders from "./pages/CustomerDashboard/orders/CustomerOrders";
 import EditProfile from "./components/ui/EditProfile";
 import AllEnquiry from "./pages/Dashboard/enquiry/AllEnquiry";
+import PaymentManagement from "./pages/Dashboard/orders/PaymentManagement";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -75,7 +76,7 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/faqs" element={<Faqs/>} />
+        <Route path="/faqs" element={<Faqs />} />
         <Route path="/return-refund-policy" element={<ReturnAndRefund />} />
         <Route
           path="/products/collections/:collectionId"
@@ -89,7 +90,6 @@ const App = () => {
         <Route path="/blog/:slug" element={<BlogDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success/:orderId" element={<OrderStatus />} />
@@ -102,7 +102,7 @@ const App = () => {
         <Route path="/test-payment" element={<TestPayment />} />
         {/* User Profile Route */}
         <Route path="/user/profile" element={<Profile />} />
-        <Route path="/user/edit-profile" element={<EditProfile/>}/>
+        <Route path="/user/edit-profile" element={<EditProfile />} />
         <Route path="/orders" element={<Orders />} />
         {/* Admin Dashboard Routes */}
         <Route element={<AdminProtectedRoute />}>
@@ -114,18 +114,23 @@ const App = () => {
             <Route path="edit-product/:id" element={<EditProduct />} />
             <Route path="products" element={<AllProducts />} />
             <Route path="add-banner" element={<AddBanner />} />
-            <Route path="banners" element={<AllBanners />} />            <Route path="add-admin" element={<AddAdmin />} />
+            <Route path="banners" element={<AllBanners />} />{" "}
+            <Route path="add-admin" element={<AddAdmin />} />
             <Route path="admins" element={<ViewAllAdmins />} />
             <Route path="orders" element={<AllOrders />} />
+            <Route path="payments" element={<PaymentManagement />} />
             <Route path="orders/:orderId" element={<OrderDetail />} />
             <Route path="add-blog" element={<AddBlog />} />
             <Route path="blogs" element={<ViewBlog />} />
-            <Route path="allEnquiry" element={<AllEnquiry/>}/>
+            <Route path="allEnquiry" element={<AllEnquiry />} />
           </Route>
-        </Route>        {/* Customer Dashboard */}
-        <Route element={<CustomerProtectedRoute/>}>
-          <Route path="/customer" element={<CustomerDashboardLayout/>}>            <Route index element={<CustomerDashboard/>} />
-            <Route path="dashboard" element={<CustomerDashboard/>} />
+        </Route>{" "}
+        {/* Customer Dashboard */}
+        <Route element={<CustomerProtectedRoute />}>
+          <Route path="/customer" element={<CustomerDashboardLayout />}>
+            {" "}
+            <Route index element={<CustomerDashboard />} />
+            <Route path="dashboard" element={<CustomerDashboard />} />
             <Route path="orders" element={<CustomerOrders />} />
             <Route path="orders/:orderId" element={<CustomerOrderDetail />} />
             <Route path="profile" element={<Profile />} />

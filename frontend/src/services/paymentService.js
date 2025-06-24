@@ -122,7 +122,13 @@ export const paymentService = {
     } else {
       return Promise.reject(new Error('Cannot process payment in non-browser environment'));
     }
-  }
+  },
+
+
+
+  // ------------------------------------------>
+
+  
 };
 
 // Export the paymentService by default as well for compatibility

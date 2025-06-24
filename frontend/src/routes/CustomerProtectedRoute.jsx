@@ -5,7 +5,7 @@ import { Outlet, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 const CustomerProtectedRoute = () => {
-  const [ok, setOk] = useState(false);
+  const [ok, setOk] = useState(true);
   const [loading, setLoading] = useState(true);
   const [auth] = useAuth();
  
@@ -13,10 +13,11 @@ const CustomerProtectedRoute = () => {
     const customerCheck = async () => {
       setLoading(true);
       try {
-        await getConfig();
+        const config = await getConfig();
         const res = await axiosInstance.get("/api/auth/customer-auth", {
           headers: {
             Authorization: `Bearer ${auth.token}`,
+            ...config?.headers,
           },
         });
 
@@ -32,14 +33,14 @@ const CustomerProtectedRoute = () => {
         setLoading(false);
       }
     };
-    
-    if (auth.token && auth.user) {
+
+    if (auth && auth.token && auth.user) {
       customerCheck();
     } else {
       setLoading(false);
       setOk(false);
     }
-  }, [auth.token, auth.user]);
+  }, [auth, auth.token, auth.user]);
   
   if (loading) {
     return (
@@ -51,7 +52,7 @@ const CustomerProtectedRoute = () => {
   }
   
   // If user is not authenticated or not a customer, redirect to login
-  return ok ? <Outlet /> : <Navigate to="/login" replace />;
+  return !loading && (ok ? <Outlet /> : <Navigate to="/login" replace />);
 };
 
 export default CustomerProtectedRoute;

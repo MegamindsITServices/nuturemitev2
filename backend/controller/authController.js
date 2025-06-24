@@ -383,3 +383,32 @@ export const UpdateAdmin = async (req, res) => {
   }
 }
 
+// Get all users (regular users)
+export const GetUsers = async (req, res) => {
+  try {
+    // Find all users
+    const users = await User.find({isUser:true}).select("-password");
+    
+    if (!users || users.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No users found",
+        users: []
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully",
+      users
+    });
+  } catch (error) {
+    console.error("Error retrieving users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while retrieving users",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+}
+

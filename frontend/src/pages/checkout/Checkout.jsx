@@ -134,6 +134,27 @@ const Checkout = () => {
       });
     }
   };
+
+  const createTransactionRecord = async (
+    orderData,
+    paymentMethod,
+    gatewayTransactionId = null
+  ) => {
+    try {
+      const response = await axiosInstance.post("/api/transactions/create", {
+        orderId: orderData.orderId || orderData._id,
+        amount: orderData.totalPrice,
+        paymentMethod: paymentMethod,
+        gatewayTransactionId: gatewayTransactionId,
+        userId: orderData.buyer,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Error creating transaction record:", error);
+      throw error;
+    }
+  };
   // Initialize payment
   const initializePayment = async () => {
     if (!validateForm()) {

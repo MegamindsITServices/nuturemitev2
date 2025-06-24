@@ -1,198 +1,460 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  CreditCard,
+  Loader2,
+  IndianRupee,
+  Users,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Plus,
+  Calendar,
+  FileText,
+  DollarSign,
+  ShoppingBag,
+  ShipIcon,
+  Currency,
+  IndianRupeeIcon,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { axiosInstance, getConfig } from "../..//utils/request";
+import { GET_ORDER } from "../..//lib/api-client";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
-  return (
-    <>
-      
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [statistics, setStatistics] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    deliveredRevenue: 0,
+    monthlyGrowth: {
+      orders: 0,
+      revenue: 0,
+    },
+  });
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [auth] = useAuth();
+
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      await getConfig();
+      const { data } = await axiosInstance.get(GET_ORDER, {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
+        },
+      });
+
+      console.log("Fetched orders for dashboard:", data.orders);
+      setOrders(data.orders);
+      calculateStatistics(data.orders);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Failed to load dashboard data. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axiosInstance.get("/api/auth/get-users", {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
+        },
+      });
+
+      setTotalUsers(data.users.length);
+      console.log("Fetched users for dashboard:", data.users);
+      // Process users if needed
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Failed to load user data. Please try again.");
+      setLoading(false);
+    }
+  };
+  // Calculate dashboard statistics
+  const calculateStatistics = (ordersData) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    // Current month orders
+    const currentMonthOrders = ordersData.filter((order) => {
+      const orderDate = new Date(order.createdAt);
+      return (
+        orderDate.getMonth() === currentMonth &&
+        orderDate.getFullYear() === currentYear
+      );
+    });
+
+    // Last month orders
+    const lastMonthOrders = ordersData.filter((order) => {
+      const orderDate = new Date(order.createdAt);
+      return (
+        orderDate.getMonth() === lastMonth &&
+        orderDate.getFullYear() === lastMonthYear
+      );
+    });
+
+    // Calculate totals
+    const totalOrders = ordersData.length;
+    // Calculate total revenue (all orders)
+    const totalRevenue = ordersData.reduce(
+      (sum, order) => sum + (order.totalPrice || 0),
+      0
+    );
+
+    // Calculate revenue for delivered orders only
+    const deliveredRevenue = ordersData
+      .filter(order => order.status === "Delivered")
+      .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+
+    // Get unique customers
+    const uniqueCustomers = new Set();
+    ordersData.forEach((order) => {
+      if (order.buyer && order.buyer._id) {
+        uniqueCustomers.add(order.buyer._id);
+      } else if (order.buyer) {
+        uniqueCustomers.add(order.buyer);
+      }
+    });
+
+    // Calculate unique products
+    const uniqueProducts = new Set();
+    ordersData.forEach((order) => {
+      if (order.products && Array.isArray(order.products)) {
+        order.products.forEach((product) => {
+          if (product._id) {
+            uniqueProducts.add(product._id);
+          }
+        });
+      }
+    });
+
+    // Calculate monthly growth
+    const currentMonthRevenue = currentMonthOrders.reduce(
+      (sum, order) => sum + (order.totalPrice || 0),
+      0
+    );
+    const lastMonthRevenue = lastMonthOrders.reduce(
+      (sum, order) => sum + (order.totalPrice || 0),
+      0
+    );
+
+    const orderGrowth =
+      lastMonthOrders.length > 0
+        ? ((currentMonthOrders.length - lastMonthOrders.length) /
+            lastMonthOrders.length) *
+          100
+        : 0;
+
+    const revenueGrowth =
+      lastMonthRevenue > 0
+        ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : 0;
+
+    setStatistics({
+      totalOrders,
+      totalRevenue,
+      deliveredRevenue,
+      totalProducts: uniqueProducts.size,
+      totalCustomers: uniqueCustomers.size,
+      monthlyGrowth: {
+        orders: Math.round(orderGrowth),
+        revenue: Math.round(revenueGrowth),
+      },
+    });
+  };
+
+  // Load orders on component mount
+  useEffect(() => {
+    if (auth?.token) {
+      fetchOrders();
+      fetchUsers();
+    }
+  }, [auth?.token]);
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Get recent orders (last 5)
+  const getRecentOrders = () => {
+    return orders
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+  };
+
+  // Get top selling products
+  const getTopProducts = () => {
+    const productCounts = {};
+
+    orders.forEach((order) => {
+      if (order.products && Array.isArray(order.products)) {
+        order.products.forEach((product) => {
+          const key = product.name || product._id;
+          if (key) {
+            productCounts[key] =
+              (productCounts[key] || 0) + (product.quantity || 1);
+          }
+        });
+      }
+    });
+
+    return Object.entries(productCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4);
+  };
+
+  // Get status badge style
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      "Not Process":
+        "px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs",
+      Processing: "px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs",
+      Shipped: "px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs",
+      Delivered: "px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs",
+      Cancelled: "px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs",
+    };
+
+    return statusStyles[status] || statusStyles["Not Process"];
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
-        
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Orders</p>
-                <h2 className="text-2xl font-bold">124</h2>
-              </div>
-              <div className="bg-blue-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-green-500 text-sm mt-2">↑ 12% from last month</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Revenue</p>
-                <h2 className="text-2xl font-bold">₹24,500</h2>
-              </div>
-              <div className="bg-green-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-green-500 text-sm mt-2">↑ 8% from last month</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Products</p>
-                <h2 className="text-2xl font-bold">36</h2>
-              </div>
-              <div className="bg-purple-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-purple-500 text-sm mt-2">3 new this month</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Customers</p>
-                <h2 className="text-2xl font-bold">89</h2>
-              </div>
-              <div className="bg-orange-100 p-2 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-orange-500 text-sm mt-2">↑ 5% from last month</p>
-          </div>
-        </div>
-        
-        {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-left">Order ID</th>
-                  <th className="px-4 py-2 text-left">Customer</th>
-                  <th className="px-4 py-2 text-left">Date</th>
-                  <th className="px-4 py-2 text-left">Amount</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="px-4 py-2">#ORD-1234</td>
-                  <td className="px-4 py-2">Amit Singh</td>
-                  <td className="px-4 py-2">May 6, 2025</td>
-                  <td className="px-4 py-2">₹1,250</td>
-                  <td className="px-4 py-2"><span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Completed</span></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="px-4 py-2">#ORD-1233</td>
-                  <td className="px-4 py-2">Priya Sharma</td>
-                  <td className="px-4 py-2">May 5, 2025</td>
-                  <td className="px-4 py-2">₹850</td>
-                  <td className="px-4 py-2"><span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Processing</span></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="px-4 py-2">#ORD-1232</td>
-                  <td className="px-4 py-2">Rahul Verma</td>
-                  <td className="px-4 py-2">May 5, 2025</td>
-                  <td className="px-4 py-2">₹2,100</td>
-                  <td className="px-4 py-2"><span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Pending</span></td>
-                </tr>
-                <tr className="border-b">
-                  <td className="px-4 py-2">#ORD-1231</td>
-                  <td className="px-4 py-2">Sneha Patel</td>
-                  <td className="px-4 py-2">May 4, 2025</td>
-                  <td className="px-4 py-2">₹760</td>
-                  <td className="px-4 py-2"><span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Completed</span></td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2">#ORD-1230</td>
-                  <td className="px-4 py-2">Vikram Malhotra</td>
-                  <td className="px-4 py-2">May 3, 2025</td>
-                  <td className="px-4 py-2">₹1,800</td>
-                  <td className="px-4 py-2"><span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Cancelled</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <button className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="text-sm">Add Product</span>
-              </button>
-              <button className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                <span className="text-sm">Process Payment</span>
-              </button>
-              <button className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span className="text-sm">Add Coupon</span>
-              </button>
-              <button className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm">Schedule Sale</span>
-              </button>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-lg font-semibold mb-4">Top Selling Products</h2>
-            <ul className="space-y-3">
-              <li className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded bg-gray-200 mr-3"></div>
-                  <span>Glutathione Vitamin C Combo</span>
-                </div>
-                <span className="font-medium">24 units</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded bg-gray-200 mr-3"></div>
-                  <span>Nano Curcumin Capsules</span>
-                </div>
-                <span className="font-medium">18 units</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded bg-gray-200 mr-3"></div>
-                  <span>Premium Trail Mix</span>
-                </div>
-                <span className="font-medium">15 units</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded bg-gray-200 mr-3"></div>
-                  <span>Organic Dry Fruits Pack</span>
-                </div>
-                <span className="font-medium">12 units</span>
-              </li>
-            </ul>
-          </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
         </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Total Orders</p>
+              <h2 className="text-2xl font-bold">{statistics.totalOrders}</h2>
+            </div>
+            <div className="bg-blue-100 p-2 rounded-full">
+              <ShoppingCart className="h-6 w-6 text-blue-500" />
+            </div>
+          </div>
+          <p
+            className={`text-sm mt-2 ${
+              statistics.monthlyGrowth.orders >= 0
+                ? "text-green-500"
+                : "text-red-500"
+            }`}
+          >
+            {statistics.monthlyGrowth.orders >= 0 ? "↑" : "↓"}{" "}
+            {Math.abs(statistics.monthlyGrowth.orders)}% from last month
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Revenue</p>
+              <h2 className="text-2xl font-bold">
+                ₹{statistics.deliveredRevenue}{" "}
+              </h2>
+            </div>
+            <div className="bg-green-100 p-2 rounded-full">
+              <IndianRupee className="h-6 w-6 text-green-500" />
+            </div>
+          </div>
+          <p className={`text-sm mt-2 ${"text-green-500"}`}>
+            Pending Revenue:{" "}
+            <span className="font-medium text-red-500">
+              ₹{statistics.totalRevenue - statistics.deliveredRevenue}
+            </span>
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Products</p>
+              <h2 className="text-2xl font-bold">{statistics.totalProducts}</h2>
+            </div>
+            <div className="bg-purple-100 p-2 rounded-full">
+              <Package className="h-6 w-6 text-purple-500" />
+            </div>
+          </div>
+          <p className="text-purple-500 text-sm mt-2">Unique products sold</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Customers</p>
+              <h2 className="text-2xl font-bold">
+                {totalUsers || statistics.totalCustomers}
+              </h2>
+            </div>
+            <div className="bg-orange-100 p-2 rounded-full">
+              <Users className="h-6 w-6 text-orange-500" />
+            </div>
+          </div>
+          <p className="text-orange-500 text-sm mt-2">Total customers</p>
+        </div>
+      </div>
+
+      {/* Recent Orders */}
+      <div className="bg-white rounded-lg shadow p-4 mb-8">
+        <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-4 py-2 text-left">Order ID</th>
+                <th className="px-4 py-2 text-left">Customer</th>
+                <th className="px-4 py-2 text-left">Date</th>
+                <th className="px-4 py-2 text-left">Amount</th>
+                <th className="px-4 py-2 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {getRecentOrders().length > 0 ? (
+                getRecentOrders().map((order) => (
+                  <tr key={order._id} className="border-b">
+                    <td className="px-4 py-2">
+                      #{order._id.substring(order._id.length - 8)}
+                    </td>
+                    <td className="px-4 py-2">
+                      {order.buyer && order.buyer.name
+                        ? order.buyer.name
+                        : order.buyer
+                        ? `User ${
+                            order.buyer._id?.substring(0, 8) ||
+                            order.buyer.substring(0, 8)
+                          }`
+                        : "Guest User"}
+                    </td>
+                    <td className="px-4 py-2">{formatDate(order.createdAt)}</td>
+                    <td className="px-4 py-2">
+                      ₹{order.totalPrice.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span className={getStatusBadge(order.status)}>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No orders found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Quick Actions and Top Products */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Link
+              to={"/admin/add-product"}
+              className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center"
+            >
+              <Plus className="h-6 w-6 text-blue-500 mb-1" />
+              <span className="text-sm">Add Product</span>
+            </Link>
+            <Link
+              to={"/admin/products"}
+              className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center"
+            >
+              <ShoppingBag className="h-6 w-6 text-blue-500 mb-1" />
+              <span className="text-sm">View Products</span>
+            </Link>
+            <Link
+              to={"/admin/orders"}
+              className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center"
+            >
+              <ShipIcon className="h-6 w-6 text-blue-500 mb-1" />
+              <span className="text-sm">View Orders</span>
+            </Link>
+            <Link
+              to={"/admin/payments"}
+              className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex flex-col items-center justify-center"
+            >
+              <IndianRupeeIcon className="h-6 w-6 text-blue-500 mb-1" />
+              <span className="text-sm">Payments</span>
+            </Link>
+          
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="text-lg font-semibold mb-4">Top Selling Products</h2>
+          <ul className="space-y-3">
+            {getTopProducts().length > 0 ? (
+              getTopProducts().map((product, index) => (
+                <li key={index} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded bg-gray-200 mr-3 flex items-center justify-center">
+                      <Package className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <span className="truncate max-w-[200px]">
+                      {product.name}
+                    </span>
+                  </div>
+                  <span className="font-medium">{product.count} units</span>
+                </li>
+              ))
+            ) : (
+              <li className="text-center text-gray-500 py-4">
+                No product data available
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -159,14 +159,9 @@ const data = {
               link: "/admin/orders",
               isActive: false,
             },
-            {
-              title: "Cancel Orders",
-              link: "/admin/cancel-orders",
-              isActive: false,
-            },
              {
               title: "Payment Details",
-              link: "/admin/Payment-details",
+              link: "/admin/payments",
               isActive: false,
             },
           ],

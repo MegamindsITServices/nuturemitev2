@@ -156,7 +156,7 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
       .populate("products.product")
       .populate("buyer");
     const response = await createXpressBeesOrder(orderData);
-    console.log(response);
+    // console.log(response);
 
     res.status(201).send({
       success: true,
