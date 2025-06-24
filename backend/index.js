@@ -234,7 +234,7 @@ app.post("/api/payment/create", async (req, res) => {
         order_id: orderId,
         // Save these details temporarily - we'll save them properly after payment succeeds
         orderData: {
-          products: cartItems.map((item) => ({productId:item.productId,quantity:item.quantity })|| ({productId:item._id,quantity:item.quantity })),
+          products: cartItems.map((item) => ({product:item.productId,quantity:item.quantity })|| ({productId:item._id,quantity:item.quantity })),
           productName: cartItems.map((item) => item.name).join(", "),
           buyer: customerInfo.userId,
           address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
@@ -301,10 +301,16 @@ app.post("/api/payment/verify", async (req, res) => {
           // For this implementation, we'll get data from the payment gateway response
 
           // Create a new order
+           const productIdsArray = paymentData.order_meta?.product_ids
+  ? event.data.order_meta.product_ids.split(",")
+  : [];
+
+const structuredProducts = productIdsArray.map((productId) => ({
+  product: productId.trim(), // ensure clean ID
+  quantity: 1, // default quantity
+}));
           const newOrder = new Order({
-            products: paymentData.order_meta?.product_ids
-              ? paymentData.order_meta.product_ids.split(",")
-              : [],
+            products:structuredProducts,
             productName: paymentData.order_meta?.product_names || "Order Items",
             buyer: paymentData.customer_details.customer_id,
             address:
@@ -415,10 +421,16 @@ app.post("/api/payment/webhook", async (req, res) => {
 
         if (!order) {
           // Create a new order for successful payments
+          const productIdsArray = event.data.order_meta?.product_ids
+  ? event.data.order_meta.product_ids.split(",")
+  : [];
+
+const structuredProducts = productIdsArray.map((productId) => ({
+  product: productId.trim(), // ensure clean ID
+  quantity: 1, // default quantity
+}));
           const newOrder = new Order({
-            products: event.data.order_meta?.product_ids
-              ? event.data.order_meta.product_ids.split(",")
-              : [],
+            products:structuredProducts,
             productName: event.data.order_meta?.product_names || "Order Items",
             buyer: event.data.customer_details.customer_id,
             address:

@@ -82,7 +82,7 @@ const createShipmentData = (order) => {
   const orderAmount = totalPrice + discount + deliveryCharges;
   // calculate the total weight
   const totalWeight = order.products.reduce(
-    (acc, p) => acc + (parseInt(p.measurements[0].withPackaging.weight) || 500),
+    (acc, p) => acc + (parseInt(p.product.measurements[0].withPackaging.weight) || 500),
     0
   );
 
@@ -123,10 +123,10 @@ const createShipmentData = (order) => {
     },
 
     order_items: order.products.map((p) => ({
-      name: p.name || "Item",
+      name: p.product.name || "Item",
       qty: Number(p.quantity || 1),
-      price: Number(p.price || 0),
-      sku: p.collection || "SKU000",
+      price: Number(p.product.price || 0),
+      sku: p.product.collection || "SKU000",
     })),
 
     collectable_amount: isCOD ? totalPrice : 0,
