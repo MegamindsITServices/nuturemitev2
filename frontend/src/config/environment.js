@@ -4,35 +4,35 @@
 const config = {
   // API URL configurations
   apiUrl: {
-    development: "http://localhost:8080",
-    production: "http://localhost:8080"
+    development: "https://api.nuturemite.info",
+    production: "https://api.nuturemite.info",
   },
-  
+
   // Image URL configurations
   imageUrl: {
     development: "https://api.nuturemite.info",
-    production: "https://api.nuturemite.info"
+    production: "https://api.nuturemite.info",
   },
-  
-  // Get current environment 
+
+  // Get current environment
   isProduction: () => {
     const hostname = window.location.hostname;
-    return !(hostname === 'localhost' || hostname === '127.0.0.1');
+    return !(hostname === "localhost" || hostname === "127.0.0.1");
   },
-  
+
   // Get appropriate API URL based on environment
   getApiUrl: () => {
-    return config.isProduction() 
-      ? config.apiUrl.production 
+    return config.isProduction()
+      ? config.apiUrl.production
       : config.apiUrl.development;
   },
-  
+
   // Get appropriate image URL based on environment
   getImageUrl: () => {
-    return config.isProduction() 
-      ? config.imageUrl.production 
+    return config.isProduction()
+      ? config.imageUrl.production
       : config.imageUrl.development;
-  }
+  },
 };
 
 export default config;

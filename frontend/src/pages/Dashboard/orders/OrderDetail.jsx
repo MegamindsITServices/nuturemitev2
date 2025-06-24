@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import jsPDF from "jspdf";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import {
@@ -41,6 +42,7 @@ import {
   RefreshCcw,
   ArrowLeft,
   Loader2,
+  Download,
 } from "lucide-react";
 import { axiosInstance } from "../../../utils/request";
 import { GET_ORDER_BY_ID, UPDATE_ORDER } from "../../../lib/api-client";
@@ -52,6 +54,8 @@ const OrderDetail = () => {
   const [error, setError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [productTotal, setProductTotal] = useState(0);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
   const [auth] = useAuth();
   const navigate = useNavigate();
@@ -116,6 +120,12 @@ const OrderDetail = () => {
       if (data.success) {
         console.log("Order details loaded:", data.order);
         setOrder(data.order);
+        setProductTotal(
+          data.order.products.reduce(
+            (total, item) => total + item.product.price * item.quantity,
+            0
+          )
+        );
       } else {
         setError("Failed to load order details");
       }
@@ -191,6 +201,358 @@ const OrderDetail = () => {
     navigate("/admin/orders");
   };
 
+  const generateInvoice = () => {
+     if (!order) return;
+ 
+     setGeneratingInvoice(true);
+ 
+     try {
+       const doc = new jsPDF();
+       const pageWidth = doc.internal.pageSize.width;
+       const pageHeight = doc.internal.pageSize.height;
+ 
+       // Colors and styling
+       const primaryColor = [37, 99, 235]; // Blue
+       const lightGray = [243, 244, 246];
+ 
+       // Company Header
+       doc.setFillColor(...primaryColor);
+       doc.rect(0, 0, pageWidth, 35, "F");
+ 
+       // Company Name
+       doc.setTextColor(255, 255, 255);
+       doc.setFontSize(24);
+       doc.setFont("helvetica", "bold");
+       // Add logo before the company name
+       const logoUrl = "/images/logo.png";
+       // Try to load the logo image and add it to the PDF
+       // jsPDF supports base64 or URL (if CORS allows)
+       // We'll use an Image object to load and convert to DataURL
+       const addLogoAndText = (callback) => {
+         const img = new window.Image();
+         img.crossOrigin = "Anonymous";
+         img.onload = function () {
+           // Draw the logo at (20, 6), width 24, height 24
+           doc.addImage(img, "PNG", 20, 6, 24, 24);
+           // Draw the company name next to the logo
+           doc.text("Nuturemite", 50, 22);
+           callback();
+         };
+         img.onerror = function () {
+           // If logo fails to load, just draw the text
+           doc.text("Nuturemite", 20, 22);
+           callback();
+         };
+         img.src = logoUrl;
+       };
+ 
+     
+       addLogoAndText(() => {
+         // Invoice Title
+         doc.setFontSize(12);
+         doc.setFont("helvetica", "normal");
+         doc.text("Tax Invoice", pageWidth - 20, 22, { align: "right" });
+ 
+         // ... rest of the PDF generation code ...
+         // (Copy everything after $SELECTION_PLACEHOLDER$ here, or refactor as needed)
+         // For brevity, you should move the rest of the code inside this callback.
+         // See https://github.com/parallax/jsPDF/issues/1939 for async image loading.
+ 
+         doc.setFontSize(12);
+         doc.setFont("helvetica", "normal");
+         doc.text("Tax Invoice", pageWidth - 20, 22, { align: "right" });
+ 
+         // Reset text color
+         doc.setTextColor(0, 0, 0);
+ 
+         // Invoice Details Box
+         const invoiceBoxY = 50;
+         doc.setFillColor(...lightGray);
+         doc.rect(120, invoiceBoxY, pageWidth - 140, 35, "F");
+         doc.setDrawColor(200, 200, 200);
+         doc.rect(120, invoiceBoxY, pageWidth - 140, 35, "S");
+ 
+         // Invoice Info
+         doc.setFontSize(10);
+         doc.setFont("helvetica", "bold");
+         doc.text("Invoice No:", 125, invoiceBoxY + 8);
+         doc.text("Order Date:", 125, invoiceBoxY + 18);
+         doc.text("Payment Status:", 125, invoiceBoxY + 28);
+ 
+         doc.setFont("helvetica", "normal");
+         doc.text(`INV-${order._id.slice(-8)}`, 155, invoiceBoxY + 8);
+         doc.text(formatDate(order.createdAt), 155, invoiceBoxY + 18);
+         doc.text(order.payment?.status || "Pending", 155, invoiceBoxY + 28);
+ 
+         // Company Address
+         doc.setFontSize(10);
+         doc.setFont("helvetica", "bold");
+         doc.text("From:", 20, invoiceBoxY + 8);
+         doc.setFont("helvetica", "normal");
+         const companyAddress = [
+           "Nuturemite",
+           "H.No:6-264/13/A/15A, Raghavaendra Colony",
+           "Quthbullapur Road,Suchitra 500055",
+           "GSTIN: 36AAUFN0688F1ZS",
+           "Email: sales@nuturemite.info",
+         ];
+ 
+         companyAddress.forEach((line, index) => {
+           doc.text(line, 20, invoiceBoxY + 18 + index * 5);
+         });
+ 
+         // Customer Details
+         const customerY = invoiceBoxY + 50;
+         doc.setFont("helvetica", "bold");
+         doc.text("Bill To:", 20, customerY);
+         doc.setFont("helvetica", "normal");
+ 
+         const customerInfo = [
+           order?.shippingAddress?.fullName || "Customer",
+           order.address,
+           `Phone: ${order.phone}`,
+           `Email: ${order?.buyer?.shippingAddress.emailAddress}`,
+         ];
+ 
+         customerInfo.forEach((line, index) => {
+           doc.text(line, 20, customerY + 10 + index * 5);
+         });
+ 
+         // Order Details
+         const orderDetailsY = customerY + 35;
+         doc.setFont("helvetica", "bold");
+         doc.text("Order Details:", 120, orderDetailsY);
+         doc.setFont("helvetica", "normal");
+         doc.text(`Order ID: ${order._id}`, 120, orderDetailsY + 10);
+         doc.text(
+           `Payment Method: ${order.payment?.method || "COD"}`,
+           120,
+           orderDetailsY + 20
+         );
+         if (order.trackingId) {
+           doc.text(`Tracking ID: ${order.trackingId}`, 120, orderDetailsY + 30);
+         }
+ 
+         // Products Table Header
+         const tableStartY = orderDetailsY + 45;
+         const tableHeaders = ["S.No", "Product Name", "Qty", "Rate", "Amount"];
+         // Adjusted column widths for better alignment
+         const colWidths = [15, 80, 15, 30, 30];
+         // Calculate X positions based on colWidths
+         const colXPositions = [];
+         let xPos = 20;
+         colWidths.forEach((w, i) => {
+           colXPositions.push(xPos);
+           xPos += w;
+         });
+ 
+         // Draw table header
+         doc.setFillColor(...primaryColor);
+         doc.rect(
+           colXPositions[0],
+           tableStartY,
+           colWidths.reduce((a, b) => a + b, 0),
+           8,
+           "F"
+         );
+         doc.setTextColor(255, 255, 255);
+         doc.setFont("helvetica", "bold");
+         doc.setFontSize(9);
+ 
+         tableHeaders.forEach((header, index) => {
+           let align = "left";
+           if (index >= 2) align = "right";
+           const x =
+             align === "right"
+               ? colXPositions[index] + colWidths[index] - 2
+               : colXPositions[index] + 2;
+           doc.text(header, x, tableStartY + 6, { align });
+         });
+ 
+         // Reset text color for table content
+         doc.setTextColor(0, 0, 0);
+         doc.setFont("helvetica", "normal");
+ 
+         // Draw table rows
+         let currentY = tableStartY + 8;
+         let rowIndex = 1;
+ 
+         if (Array.isArray(order.products) && order.products.length > 0) {
+           order.products.forEach((item) => {
+             const product = item.product;
+             const subtotal = (product.price * item.quantity).toFixed(2);
+ 
+             // Draw row background (alternate colors)
+             if (rowIndex % 2 === 0) {
+               doc.setFillColor(248, 249, 250);
+               doc.rect(
+                 colXPositions[0],
+                 currentY,
+                 colWidths.reduce((a, b) => a + b, 0),
+                 10,
+                 "F"
+               );
+             }
+ 
+             // Draw row borders
+             doc.setDrawColor(220, 220, 220);
+             doc.rect(
+               colXPositions[0],
+               currentY,
+               colWidths.reduce((a, b) => a + b, 0),
+               10,
+               "S"
+             );
+ 
+             // Add row data
+             const rowData = [
+               rowIndex.toString(),
+               product.name || "Product",
+               item.quantity.toString(),
+               `Rs. ${product.price?.toFixed(2) || "0.00"}`,
+               `Rs. ${subtotal}`,
+             ];
+ 
+             let rowHeight = 10;
+             rowData.forEach((data, colIndex) => {
+               let align = "left";
+               if (colIndex >= 2) align = "right";
+               const x =
+                 align === "right"
+                   ? colXPositions[colIndex] + colWidths[colIndex] - 2
+                   : colXPositions[colIndex] + 2;
+               const maxWidth = colWidths[colIndex] - 4;
+ 
+               // Handle text wrapping for long product names
+               if (colIndex === 1 && data.length > 25) {
+                 const splitText = doc.splitTextToSize(data, maxWidth);
+                 doc.text(splitText[0], x, currentY + 7, { align });
+                 if (splitText[1]) {
+                   doc.text(splitText[1], x, currentY + 11, { align });
+                   rowHeight = 14;
+                 }
+               } else {
+                 doc.text(data, x, currentY + 7, { align });
+               }
+             });
+ 
+             currentY += rowHeight;
+             rowIndex++;
+           });
+         } else {
+           // Handle single product case
+           const rowData = [
+             "1",
+             order.productName || "Order Item",
+             "1",
+             `Rs. ${productTotal.toFixed(2)}`,
+             `Rs. ${productTotal.toFixed(2)}`,
+           ];
+ 
+           doc.setFillColor(248, 249, 250);
+           doc.rect(
+             colXPositions[0],
+             currentY,
+             colWidths.reduce((a, b) => a + b, 0),
+             10,
+             "F"
+           );
+           doc.setDrawColor(220, 220, 220);
+           doc.rect(
+             colXPositions[0],
+             currentY,
+             colWidths.reduce((a, b) => a + b, 0),
+             10,
+             "S"
+           );
+ 
+           rowData.forEach((data, colIndex) => {
+             let align = "left";
+             if (colIndex >= 2) align = "right";
+             const x =
+               align === "right"
+                 ? colXPositions[colIndex] + colWidths[colIndex] - 2
+                 : colXPositions[colIndex] + 2;
+             doc.text(data, x, currentY + 7, { align });
+           });
+ 
+           currentY += 10;
+         }
+ 
+         // Totals Section
+         const totalsY = currentY + 10;
+         const totalsX = pageWidth - 20;
+ 
+         // Subtotal
+         doc.setFont("helvetica", "normal");
+         doc.text("Subtotal:", totalsX - 50, totalsY);
+         doc.text(`Rs. ${productTotal.toFixed(2)}`, totalsX, totalsY, {
+           align: "right",
+         });
+ 
+         // Shipping
+         const shippingCharges = order.totalPrice - productTotal;
+         doc.text("Shipping:", totalsX - 50, totalsY + 8);
+         doc.text(`Rs. ${shippingCharges.toFixed(2)}`, totalsX, totalsY + 8, {
+           align: "right",
+         });
+ 
+         // Draw line above total
+         doc.setDrawColor(0, 0, 0);
+         doc.line(totalsX - 50, totalsY + 12, totalsX, totalsY + 12);
+ 
+         // Total
+         doc.setFont("helvetica", "bold");
+         doc.setFontSize(10);
+         doc.text("Total (Including GST): ", totalsX - 55, totalsY + 20);
+         doc.text(`Rs. ${order.totalPrice?.toFixed(2)}`, totalsX, totalsY + 20, {
+           align: "right",
+         });
+ 
+         // Footer
+         const footerY = pageHeight - 40;
+         doc.setFontSize(8);
+         doc.setFont("helvetica", "normal");
+         doc.setTextColor(75, 85, 99);
+ 
+         // Terms and conditions
+         doc.text("Terms & Conditions:", 20, footerY);
+         const terms = [
+           "1. This is a system generated invoice.",
+           "2. Please visit https://nuturemite.info for more details.",
+         ];
+ 
+         terms.forEach((term, index) => {
+           doc.text(term, 20, footerY + 8 + index * 4);
+         });
+ 
+         // Company footer
+         doc.setTextColor(0, 0, 0);
+         doc.setFont("helvetica", "bold");
+         doc.text(
+           "Thank you for shopping with Nuturemite!",
+           pageWidth / 2,
+           footerY + 25,
+           { align: "center" }
+         );
+ 
+         // Save the PDF
+         doc.save(`Invoice-${order._id}.pdf`);
+       });
+ 
+       // Return here to prevent the rest of the code from running before image loads
+       return;
+ 
+       // Invoice Title
+     
+     } catch (error) {
+       console.error("Error generating invoice:", error);
+       alert("Failed to generate invoice. Please try again.");
+     } finally {
+       setGeneratingInvoice(false);
+     }
+   };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[70vh]">
@@ -256,6 +618,15 @@ const OrderDetail = () => {
                     </span>
                   </Badge>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={generateInvoice}
+                  disabled={generatingInvoice}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  <Download size={16} className="mr-1.5" />
+                  {generatingInvoice ? "Generating..." : "Download Invoice"}
+                </Button>
               </div>
 
               <Separator className="my-4" />
@@ -313,7 +684,7 @@ const OrderDetail = () => {
                     No products in this order
                   </p>
                 ) : (
-                  order.products.map(({product, quantity}, index) => {
+                  order.products.map(({ product, quantity }, index) => {
                     const isPopulated =
                       typeof product !== "string" &&
                       product !== null &&
@@ -333,9 +704,7 @@ const OrderDetail = () => {
                                 src={
                                   product.images[0].startsWith("http")
                                     ? product.images[0]
-                                    : `https://api.nuturemite.info/image/${
-                                        product.images[0]
-                                      }`
+                                    : `https://api.nuturemite.info/image/${product.images[0]}`
                                 }
                                 alt={product.name}
                                 className="w-full h-full object-cover rounded-md"
@@ -393,7 +762,15 @@ const OrderDetail = () => {
 
               <Separator className="my-4" />
 
-              <div className="flex justify-end">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <p className="text-base font-semibold text-gray-800">
+                    Shipping Charges:{" "}
+                  </p>
+                  <p className="font-medium">
+                    ₹{order.totalPrice - productTotal || "0"}
+                  </p>
+                </div>
                 <p className="text-lg font-semibold">
                   Total: ₹{order.totalPrice.toFixed(2)}
                 </p>
