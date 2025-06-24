@@ -10,11 +10,30 @@ const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [auth] = useAuth();
-
+  const shippingTotal=()=>{
+    let totalWeight=0;
+    let totalShippingPrize=0;
+    for(let i=0;i<cart.length;i++){
+      totalWeight+=(parseFloat(cart[i].measurements[0].withPackaging[0].weight)*cart[i].quantity)
+      
+    }
+if(totalWeight > 500 && totalWeight <=1000 ){
+        totalShippingPrize+=70
+      }else if(totalWeight > 1000 && totalWeight <=2000){
+       totalShippingPrize+=140;
+      }else if(totalWeight > 2000 && totalWeight <=3000){
+        totalShippingPrize+=210;
+      }else if(totalWeight > 3000 ){
+        totalShippingPrize+=500;
+      }else{
+          totalShippingPrize+=40
+      }
+    return totalShippingPrize;
+  }
   // Calculate cart total
   const cartTotal = cart.reduce((total, item) => {
     const quantity = item.quantity || 1;
-    return total + (item.price * quantity);
+    return total + ((item.price)* quantity);
   }, 0);
 
   // Open cart sidebar
@@ -174,7 +193,8 @@ const CartProvider = ({ children }) => {
         updateQuantity,
         cartTotal,
         fetchCartProducts,
-        clearCart
+        clearCart,
+        shippingTotal
       }}
     >
       {children}

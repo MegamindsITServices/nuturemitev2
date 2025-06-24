@@ -17,6 +17,7 @@ export const addProduct = async (req, res) => {
       name, 
       description, 
       price, 
+      shippingPrice,
       originalPrice, 
       discount, 
       feature, 
@@ -32,7 +33,7 @@ export const addProduct = async (req, res) => {
     } = req.body;
 
     // Check required fields
-    if (!name || !description || !price || !originalPrice || !collection) {
+    if (!name || !description || !price || !shippingPrice || !originalPrice || !collection) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
