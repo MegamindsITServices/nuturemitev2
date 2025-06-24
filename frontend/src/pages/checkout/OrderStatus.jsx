@@ -185,7 +185,7 @@ const OrderSuccess = () => {
           {isSuccess ? (
             <>
               <button
-                onClick={() => navigate("/orders")}
+                onClick={() => navigate("/customer/orders")}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-medium"
               >
                 View Orders

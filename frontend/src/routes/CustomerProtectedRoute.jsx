@@ -8,6 +8,8 @@ const CustomerProtectedRoute = () => {
   const [ok, setOk] = useState(true);
   const [loading, setLoading] = useState(true);
   const [auth] = useAuth();
+
+
  
   useEffect(() => {
     const customerCheck = async () => {
@@ -50,9 +52,13 @@ const CustomerProtectedRoute = () => {
       </div>
     );
   }
+
+  const { token, user } = localStorage.getItem('auth') ? JSON.parse(localStorage.getItem('auth')) : {}
+   
   
-  // If user is not authenticated or not a customer, redirect to login
-  return !loading && (ok ? <Outlet /> : <Navigate to="/login" replace />);
+  
+    return (token && user) ? <Outlet /> : <Navigate to="/login" replace />
+  
 };
 
 export default CustomerProtectedRoute;

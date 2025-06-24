@@ -16,6 +16,10 @@ const orderSchema = new mongoose.Schema({
     productName :{
         type : String,
     },
+    trackingId:{
+        type : String,
+        default : null
+    },
     buyer : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"

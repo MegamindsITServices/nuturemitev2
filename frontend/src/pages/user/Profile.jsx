@@ -95,7 +95,7 @@ const Profile = () => {
               <h3 className="font-bold mb-3 text-lg">Order History</h3>
               <p className="text-gray-600">View your recent orders and track deliveries.</p>
               <button
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate('/customer/orders')}
                 className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
               >
                 View Orders →

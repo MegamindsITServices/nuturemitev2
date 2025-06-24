@@ -313,7 +313,7 @@ const OrderDetail = () => {
                     No products in this order
                   </p>
                 ) : (
-                  order.products.map((product, index) => {
+                  order.products.map(({product, quantity}, index) => {
                     const isPopulated =
                       typeof product !== "string" &&
                       product !== null &&
@@ -333,7 +333,7 @@ const OrderDetail = () => {
                                 src={
                                   product.images[0].startsWith("http")
                                     ? product.images[0]
-                                    : `${import.meta.env.VITE_BACKEND_URL}/${
+                                    : `https://api.nuturemite.info/image/${
                                         product.images[0]
                                       }`
                                 }
@@ -367,18 +367,21 @@ const OrderDetail = () => {
                               )}
                             </div>
                             <div className="mt-2 sm:mt-0 sm:text-right">
+                              <p className="text-bold whitespace-nowrap">
+                                Quantity : {quantity}
+                              </p>
                               {isPopulated && product.price && (
                                 <p className="font-medium">
                                   ₹{product.price.toFixed(2)}
                                 </p>
                               )}
-                              {isPopulated && product.collection && (
+                              {/* {isPopulated && product.collection && (
                                 <p className="text-xs text-muted-foreground">
                                   {typeof product.collection === "object"
                                     ? product.collection.name
                                     : "Unknown Collection"}
                                 </p>
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </div>

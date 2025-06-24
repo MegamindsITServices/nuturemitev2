@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../../../utils/request';
-import { backendURL } from '../../../lib/api-client';
 import { toast } from 'sonner';
 import { Edit2, Trash2, Upload, X, AlertCircle, Check } from 'lucide-react';
 
@@ -228,7 +227,7 @@ const AllBanners = () => {
                   // Regular display mode
                   <>
                     <img 
-                      src={`${backendURL}/banner/${banner.bannerImage}`} 
+                      src={`https://api.nuturemite.info/banner/${banner.bannerImage}`} 
                       alt="Banner" 
                       className="w-full h-48 object-cover"
                     />

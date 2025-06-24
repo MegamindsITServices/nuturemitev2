@@ -187,7 +187,7 @@ const Orders = () => {
                     <ChevronRight size={16} className="ml-1" />
                   </button>
                   
-                  {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                  { (
                     <button 
                       onClick={() => console.log('Track order')} 
                       className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600"

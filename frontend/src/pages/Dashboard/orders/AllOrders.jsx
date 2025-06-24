@@ -316,10 +316,10 @@ const AllOrders = () => {
     if (isPopulated) {
       // If we have 1 product, show its name
       if (products.length === 1) {
-        return products[0].name || "Unknown Product";
+        return products[0]?.product?.name || "Unknown Product";
       }
       // If we have multiple products, show the first one and "+X more"
-      return `${products[0].name || "Unknown Product"} +${
+      return `${products[0]?.product?.name || "Unknown Product"} +${
         products.length - 1
       } more`;
     } else {
@@ -672,7 +672,7 @@ const AllOrders = () => {
               </p>
             ) : (
               <div className="space-y-4">
-                {selectedProducts.map((product, index) => {
+                {selectedProducts.map(({product, quantity}, index) => {
                   // Check if product is a populated object or just an ID
                   const isPopulated = typeof product !== "string";
                   // If your schema is { product, quantity }, adjust accordingly:
@@ -685,15 +685,14 @@ const AllOrders = () => {
                         {isPopulated ? (
                           <div className="flex flex-col md:flex-row gap-4">
                             {/* Product Image */}
+
                             {product.images && product.images.length > 0 && (
                               <div className="md:w-1/4">
                                 <img
                                   src={
                                     product.images[0].startsWith("http")
                                       ? product.images[0]
-                                      : `${import.meta.env.VITE_API}/${
-                                          product.images[0]
-                                        }`
+                                      : `https://api.nuturemite.info/image/${product.images[0]}`
                                   }
                                   alt={product.name}
                                   className="w-full h-auto rounded-md object-cover aspect-square"
@@ -717,7 +716,9 @@ const AllOrders = () => {
                               <h3 className="font-semibold text-lg mb-1">
                                 {product.name}
                               </h3>
-
+                              <h3 className="font-semibold text-lg mb-1">
+                                Quantity : {quantity}
+                              </h3>
                               <div className="grid grid-cols-2 gap-2 mt-2">
                                 <div>
                                   <p className="text-sm font-medium">Price:</p>
@@ -734,7 +735,7 @@ const AllOrders = () => {
                                     <p className="text-sm">
                                       {typeof product.collection === "object"
                                         ? product.collection.name
-                                        : "Unknown"}
+                                        : "All"}
                                     </p>
                                   </div>
                                 )}

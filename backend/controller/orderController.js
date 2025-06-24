@@ -158,7 +158,7 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
       .populate("buyer");
     const response = await createXpressBeesOrder(orderData);
     // console.log(response);
-
+    newOrder.trackingId = response?.awb_number || "N/A";
     res.status(201).send({
       success: true,
       message: "Order created successfully",

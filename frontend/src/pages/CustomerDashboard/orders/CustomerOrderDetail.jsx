@@ -15,7 +15,8 @@ import {
   Phone,
   CreditCard,
   CalendarClock,
-  Shield
+  Shield,
+  ChevronRight
 } from 'lucide-react';
 import {
   Card,
@@ -85,7 +86,7 @@ const CustomerOrderDetail = () => {
     
     const interval = setInterval(() => {
       fetchOrderDetails();
-    }, 10000);
+    }, 10000000);
     
     setPollingInterval(interval);
     
@@ -177,17 +178,8 @@ const CustomerOrderDetail = () => {
   };
 
   const getProductImageUrl = (image) => {
-    if (!image) return 'https://via.placeholder.com/100';
     
-    if (typeof image === 'string') {
-      if (image.startsWith('http')) {
-        return image;
-      } else {
-        return `${backendURL}/${image}`;
-      }
-    }
-    
-    return 'https://via.placeholder.com/100';
+    return `https://api.nuturemite.info/image/${image}`;
   };
 
   const handleCancelOrder = async () => {
@@ -260,16 +252,16 @@ const CustomerOrderDetail = () => {
       <div className="max-w-5xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate('/customer/orders')}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/customer/orders")}
             className="flex items-center gap-1"
           >
             <ChevronLeft size={16} /> Back to Orders
           </Button>
         </div>
-        
+
         {/* Order Header Card */}
         <Card className="mb-6">
           <CardHeader className="pb-3">
@@ -280,9 +272,11 @@ const CustomerOrderDetail = () => {
                   Order #{order._id.slice(-8)}
                 </CardTitle>
                 <CardDescription>
-                  Placed on {formatDate(order.createdAt)} at {formatTime(order.createdAt)}
+                  Placed on {formatDate(order.createdAt)} at{" "}
+                  {formatTime(order.createdAt)}
                 </CardDescription>
               </div>
+
               <div className="flex gap-2">
                 <Badge className={getStatusColor(order.status)}>
                   <span className="flex items-center gap-1">
@@ -290,8 +284,12 @@ const CustomerOrderDetail = () => {
                     {order.status}
                   </span>
                 </Badge>
-                <Badge className={getPaymentStatusColor(order.payment?.status || 'Pending')}>
-                  Payment {order.payment?.status || 'Pending'}
+                <Badge
+                  className={getPaymentStatusColor(
+                    order.payment?.status || "Pending"
+                  )}
+                >
+                  Payment {order.payment?.status || "Pending"}
                 </Badge>
               </div>
             </div>
@@ -299,29 +297,37 @@ const CustomerOrderDetail = () => {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Order Date</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Order Date
+                </h3>
                 <p className="flex items-center gap-1.5">
                   <CalendarClock size={16} className="text-gray-400" />
                   {formatDate(order.createdAt)}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Method</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Payment Method
+                </h3>
                 <p className="flex items-center gap-1.5">
-                  {getPaymentMethodIcon(order.payment?.method || 'Cash on Delivery')}
-                  {order.payment?.method || 'Cash on Delivery'}
+                  {getPaymentMethodIcon(
+                    order.payment?.method || "Cash on Delivery"
+                  )}
+                  {order.payment?.method || "Cash on Delivery"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Total Amount</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Total Amount
+                </h3>
                 <p className="font-semibold">₹{order.totalPrice?.toFixed(2)}</p>
               </div>
             </div>
           </CardContent>
-          {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+          {order.status !== "Delivered" && order.status !== "Cancelled" && (
             <CardFooter className="border-t pt-4 bg-gray-50/50">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="text-red-600 border-red-200 hover:bg-red-50"
                 onClick={() => setCancelDialogOpen(true)}
               >
@@ -329,8 +335,18 @@ const CustomerOrderDetail = () => {
               </Button>
             </CardFooter>
           )}
+          <CardFooter>
+            <a
+              target="_blank"
+              href={`https://www.xpressbees.com/shipment/tracking?awbNo=${order.trackingId}`}
+              className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600"
+            >
+              Track Order
+              <ChevronRight size={16} className="ml-1" />
+            </a>
+          </CardFooter>
         </Card>
-        
+
         {/* Product Details Card */}
         <Card className="mb-6">
           <CardHeader className="pb-3">
@@ -338,49 +354,64 @@ const CustomerOrderDetail = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
-              {Array.isArray(order.products) && order.products.map((product, index) => (
-                <div key={product._id || index} className="p-4 flex flex-col sm:flex-row gap-4">
-                  {/* Product Image */}
-                  {product.images && product.images.length > 0 && (
-                    <div className="w-full sm:w-24 h-24">
-                      <img 
-                        src={getProductImageUrl(product.images[0])}
-                        alt={product.name} 
-                        className="w-full h-full object-cover rounded-md"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/100?text=Product';
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Product Details */}
-                  <div className="flex-1">
-                    <h3 className="font-medium text-base">{product.name}</h3>
-                    {product.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">{product.description}</p>
-                    )}
-                    
-                    <div className="mt-2 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Price</p>
-                        <p className="font-medium">₹{product.price?.toFixed(2)}</p>
+              {Array.isArray(order.products) &&
+                order.products.map(({product}, index) => (
+                  <div
+                    key={product._id || index}
+                    className="p-4 flex flex-col sm:flex-row gap-4"
+                  >
+                    {/* Product Image */}
+                    {product.images && product.images.length > 0 && (
+                      <div className="w-full sm:w-24 h-24">
+                        <img
+                          src={getProductImageUrl(product.images[0])}
+                          alt={product.name}
+                          className="w-full h-full object-cover rounded-md"
+                          // onError={(e) => {
+                          //   e.target.onerror = null;
+                          //   e.target.src =
+                          //     "https://via.placeholder.com/100?text=Product";
+                          // }}
+                        />
                       </div>
-                      {product.discount > 0 && (
-                        <div>
-                          <p className="text-sm text-gray-500">Discount</p>
-                          <p className="font-medium text-green-600">{product.discount}% off</p>
-                        </div>
+                    )}
+
+                    {/* Product Details */}
+                    <div className="flex-1">
+                      <h3 className="font-medium text-base">{product.name}</h3>
+                      {product.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                          {product.description}
+                        </p>
                       )}
+
+                      <div className="mt-2 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Price</p>
+                          <p className="font-medium">
+                            ₹{product.price?.toFixed(2)}
+                          </p>
+                        </div>
+                        {product.discount > 0 && (
+                          <div>
+                            <p className="text-sm text-gray-500">Discount</p>
+                            <p className="font-medium text-green-600">
+                              {product.discount}% off
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
               {/* If products array is empty or just contains IDs */}
-              {(!Array.isArray(order.products) || order.products.length === 0 || typeof order.products[0] === 'string') && (
+              {(!Array.isArray(order.products) ||
+                order.products.length === 0 ||
+                typeof order.products[0] === "string") && (
                 <div className="p-4">
-                  <p className="text-gray-500">{order.productName || 'Order items'}</p>
+                  <p className="text-gray-500">
+                    {order.productName || "Order items"}
+                  </p>
                 </div>
               )}
             </div>
@@ -392,7 +423,7 @@ const CustomerOrderDetail = () => {
             </div>
           </CardFooter>
         </Card>
-        
+
         {/* Shipping Information Card */}
         <Card className="mb-6">
           <CardHeader className="pb-3">
@@ -401,14 +432,18 @@ const CustomerOrderDetail = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Delivery Address</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Delivery Address
+                </h3>
                 <p className="flex items-start gap-1.5 mt-1">
                   <MapPin size={16} className="text-gray-400 mt-0.5 shrink-0" />
                   <span>{order.address}</span>
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Contact Number</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Contact Number
+                </h3>
                 <p className="flex items-center gap-1.5 mt-1">
                   <Phone size={16} className="text-gray-400" />
                   {order.phone}
@@ -417,7 +452,7 @@ const CustomerOrderDetail = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Payment Information Card */}
         <Card>
           <CardHeader className="pb-3">
@@ -426,28 +461,46 @@ const CustomerOrderDetail = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Method</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Payment Method
+                </h3>
                 <p className="flex items-center gap-1.5 mt-1">
-                  {getPaymentMethodIcon(order.payment?.method || 'Cash on Delivery')}
-                  {order.payment?.method || 'Cash on Delivery'}
+                  {getPaymentMethodIcon(
+                    order.payment?.method || "Cash on Delivery"
+                  )}
+                  {order.payment?.method || "Cash on Delivery"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Status</h3>
-                <Badge className={getPaymentStatusColor(order.payment?.status || 'Pending')}>
-                  {order.payment?.status || 'Pending'}
+                <h3 className="text-sm font-medium text-gray-500 mb-1">
+                  Payment Status
+                </h3>
+                <Badge
+                  className={getPaymentStatusColor(
+                    order.payment?.status || "Pending"
+                  )}
+                >
+                  {order.payment?.status || "Pending"}
                 </Badge>
               </div>
             </div>
-            
-            {order.payment?.method === 'Cash on Delivery' && (
+
+            {order.payment?.method === "Cash on Delivery" && (
               <div className="mt-4 bg-yellow-50 rounded-md p-3">
                 <div className="flex items-start gap-2">
-                  <Shield className="text-yellow-500 shrink-0 mt-0.5" size={16} />
+                  <Shield
+                    className="text-yellow-500 shrink-0 mt-0.5"
+                    size={16}
+                  />
                   <div>
-                    <p className="text-sm font-medium text-yellow-700">Cash on Delivery Information</p>
+                    <p className="text-sm font-medium text-yellow-700">
+                      Cash on Delivery Information
+                    </p>
                     <ul className="text-xs text-yellow-700 mt-1 list-inside list-disc">
-                      <li>Please keep the exact amount ready at the time of delivery</li>
+                      <li>
+                        Please keep the exact amount ready at the time of
+                        delivery
+                      </li>
                       <li>Our delivery partner will collect the payment</li>
                       <li>Please collect your receipt after payment</li>
                     </ul>
@@ -455,15 +508,19 @@ const CustomerOrderDetail = () => {
                 </div>
               </div>
             )}
-            
-            {order.payment?.method === 'PhonePe' && (
+
+            {order.payment?.method === "PhonePe" && (
               <div className="mt-4 bg-blue-50 rounded-md p-3">
                 <div className="flex items-start gap-2">
                   <Shield className="text-blue-500 shrink-0 mt-0.5" size={16} />
                   <div>
-                    <p className="text-sm font-medium text-blue-700">Online Payment Information</p>
+                    <p className="text-sm font-medium text-blue-700">
+                      Online Payment Information
+                    </p>
                     <ul className="text-xs text-blue-700 mt-1 list-inside list-disc">
-                      <li>Transaction ID: {order.payment?.transactionId || 'N/A'}</li>
+                      <li>
+                        Transaction ID: {order.payment?.transactionId || "N/A"}
+                      </li>
                       <li>Secure payment processed through PhonePe</li>
                     </ul>
                   </div>
@@ -472,31 +529,32 @@ const CustomerOrderDetail = () => {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Cancel Order Dialog */}
         <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Cancel Order</DialogTitle>
               <DialogDescription>
-                Are you sure you want to cancel this order? This action cannot be undone.
+                Are you sure you want to cancel this order? This action cannot
+                be undone.
               </DialogDescription>
             </DialogHeader>
-            
+
             <DialogFooter>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setCancelDialogOpen(false)}
                 disabled={cancelling}
               >
                 Keep Order
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={handleCancelOrder}
                 disabled={cancelling}
               >
-                {cancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
+                {cancelling ? "Cancelling..." : "Yes, Cancel Order"}
               </Button>
             </DialogFooter>
           </DialogContent>

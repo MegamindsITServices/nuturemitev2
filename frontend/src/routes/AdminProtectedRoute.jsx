@@ -5,7 +5,7 @@ import { axiosInstance } from '../utils/request'
 import { ADMIN_PROTECTED } from '../lib/api-client'
 
 const AdminProtectedRoute = () => {
-  const [ok, setOk] = useState(true)
+  const [ok, setOk] = useState(false)
   const [loading, setLoading] = useState(true)
   const [auth] = useAuth()
   
@@ -41,12 +41,20 @@ const AdminProtectedRoute = () => {
       setOk(false)
     }
   }, [auth.token, auth.user])
+  
+  const { token, user } = localStorage.getItem("auth")
+    ? JSON.parse(localStorage.getItem("auth"))
+    : {};
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
-  return !loading && (ok ? <Outlet /> : <Navigate to="/unauthorized" replace />)
+  return token && user?.isAdmin ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/unauthorized" replace />
+  );
 }
 
 export default AdminProtectedRoute
