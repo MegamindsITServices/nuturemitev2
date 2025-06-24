@@ -414,12 +414,12 @@ const Navbar = () => {
               >
                 <div className="flex flex-col space-y-1 min-w-[150px]">
                   {auth?.user ? (                    <>
-                      <Link
+                      {/* <Link
                         to="/user/profile"
                         className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
                       >
                         My Profile
-                      </Link>
+                      </Link> */}
                       {auth.user.isUser && (
                         <Link
                           to="/customer/dashboard"
@@ -700,14 +700,15 @@ const Navbar = () => {
                     </Link>
                   </>
                 ) : (
-                  <>                    <Link
+                  <>                    
+                  {/* <Link
                       to="/user/profile"
                       className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <User size={18} />
                       <span>My Profile</span>
-                    </Link>
+                    </Link> */}
 
                     {auth.user.isUser && (
                       <Link

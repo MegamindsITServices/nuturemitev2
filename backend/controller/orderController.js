@@ -143,6 +143,7 @@ export const createOrder = async (req, res) => {
 console.log("Creating order with totalPrice:", req.body.totalPrice);
 
     const { products, buyer, address, phone, payment, totalPrice } = req.body;
+    console.log(products);
     const newOrder = new Order({
       products,
       buyer,

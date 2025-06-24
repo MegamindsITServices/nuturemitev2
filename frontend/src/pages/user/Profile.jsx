@@ -90,7 +90,7 @@ const Profile = () => {
 
           <hr className="my-8" />
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="font-bold mb-3 text-lg">Order History</h3>
               <p className="text-gray-600">View your recent orders and track deliveries.</p>
@@ -102,7 +102,7 @@ const Profile = () => {
               </button>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg">
+            {/* <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="font-bold mb-3 text-lg">Saved Addresses</h3>
               <p className="text-gray-600">Manage your delivery and billing addresses.</p>
               <button
@@ -111,9 +111,9 @@ const Profile = () => {
               >
                 Manage Addresses →
               </button>
-            </div>
+            </div> */}
 
-            {auth.user.isAdmin && (
+            {/* {auth.user.isAdmin && (
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="font-bold mb-3 text-lg">Admin Dashboard</h3>
                 <p className="text-gray-600">Access your admin controls and management.</p>
@@ -124,8 +124,8 @@ const Profile = () => {
                   Go to Dashboard →
                 </button>
               </div>
-            )}
-          </div> */}
+            )} */}
+          </div>
         </div>
       </div>
     </div>
