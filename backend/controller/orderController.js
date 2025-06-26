@@ -168,6 +168,8 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
       console.log("Sending order confirmation email to:", orderData.buyer.email);
       
       const orderLink = `${process.env.FRONTEND_URL}/customer/orders/${orderData._id}`;
+      const adminOrderLink = `${process.env.FRONTEND_URL}/admin/orders/${orderData._id}`;
+
       const invoiceLink = `${process.env.FRONTEND_URL}/customer/orders/${orderData._id}`;
       // Generate products HTML
       const productsHtml = orderData.products
@@ -183,12 +185,47 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
         )
         .join("");
 
+      // Send email to the buyer
       sendEmail({
         to: orderData.buyer.email,
         subject: "Your Order Has Been Placed!",
         html: `
           <h2>Thank you for your order!</h2>
           <p>Your order <b>#${orderData._id}</b> has been placed successfully.</p>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin:16px 0;">
+        <thead>
+          <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productsHtml}
+        </tbody>
+          </table>
+          <p><b>Total Price: ₹${orderData.totalPrice?.toFixed(2) || "N/A"}</b></p>
+          <p>
+        <a href="${orderLink}">View your order</a> | 
+        <a href="${invoiceLink}">Download Invoice</a>
+          </p>
+          <p>We appreciate your business.</p>
+        `,
+      });
+
+      // Send email to admin about new order
+      sendEmail({
+        to: process.env.ADMIN_MAIL,
+        subject: `New Order Placed by ${
+          orderData.buyer.name || orderData.buyer.email
+        }`,
+        html: `
+          <h2>New Order Received</h2>
+          <p>User <b>${
+            orderData.buyer.name || orderData.buyer.email
+          }</b> has placed a new order.</p>
+          <p>Order ID: <b>#${orderData._id}</b></p>
           <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin:16px 0;">
         <thead>
           <tr>
@@ -202,12 +239,12 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
           ${productsHtml}
         </tbody>
           </table>
-          <p><b>Total Price: ₹${orderData.totalPrice?.toFixed(2) || "N/A"}</b></p>
+          <p><b>Total Price: ₹${
+            orderData.totalPrice?.toFixed(2) || "N/A"
+          }</b></p>
           <p>
-        <a href="${orderLink}">View your order</a> | 
-        <a href="${invoiceLink}">Download Invoice</a>
+        <a href="${adminOrderLink}">View Order in Dashboard</a>
           </p>
-          <p>We appreciate your business.</p>
         `,
       });
     }
