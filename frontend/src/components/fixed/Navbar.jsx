@@ -521,6 +521,12 @@ const Navbar = () => {
           >
             BLOGS
           </Link>
+           <Link
+            to="/business"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            BUSINESS
+          </Link>
           {/* <Link
             to="/Competitions"
             className="hover:text-opacity-80 transition-opacity"

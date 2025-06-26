@@ -59,7 +59,7 @@ const Footer = () => {
 
           {/* Newsletter Subscription */}
           <div className="w-full lg:w-auto">
-            <p className="text-sm mb-4">
+            {/* <p className="text-sm mb-4">
               Subscribe to our newsletter for updates and special offers!
             </p>
             <div className="flex">
@@ -73,7 +73,7 @@ const Footer = () => {
               <Button className="bg-white text-black hover:bg-gray-200 rounded-full text-xs font-medium px-6">
                 SUBSCRIBE
               </Button>
-            </div>
+            </div> */}
             {/* <div className="flex justify-end items-center mt-4">
               <span className="text-xs mr-2">FSSAI License No - 11521998000649</span>
               <img src="/api/placeholder/50/30" alt="FSSAI Logo" className="h-8" />

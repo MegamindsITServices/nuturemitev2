@@ -54,6 +54,8 @@ import CustomerOrders from "./pages/CustomerDashboard/orders/CustomerOrders";
 import EditProfile from "./components/ui/EditProfile";
 import AllEnquiry from "./pages/Dashboard/enquiry/AllEnquiry";
 import PaymentManagement from "./pages/Dashboard/orders/PaymentManagement";
+import TermsAndConditions from "./pages/termsandcondition/termAndCondition";
+import BusinessPage from "./pages/business/Business";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -82,11 +84,13 @@ const App = () => {
           path="/products/collections/:collectionId"
           element={<Products />}
         />
+        <Route path="/business" element={<BusinessPage/>}/>
         <Route path="/product/:slug" element={<ProductDetail />} />
         <Route path="/combos" element={<CombosPage />} />
         <Route path="/combos/:id" element={<ComboProducts />} />
         <Route path="/our-story" element={<OurStory />} />
         <Route path="/blogs" element={<Blogs />} />
+        <Route path="/termsAndConditions" element={<TermsAndConditions/>}/>
         <Route path="/blog/:slug" element={<BlogDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

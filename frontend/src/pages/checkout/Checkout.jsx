@@ -79,7 +79,7 @@ const Checkout = () => {
   // Calculate subtotal, shipping, and taxes
   const subtotal = cartTotal;
   console.log(subtotal);
-  const shipping = subtotal < 600 ? shippingTotal() : 0;
+  const shipping = subtotal < 1000 ? shippingTotal() : 0;
   const tax = 0;
   const totalAmount = subtotal + shipping + tax;
 
@@ -925,27 +925,27 @@ const Checkout = () => {
                 </ul>
               </div>
 
-              {subtotal < 600 && subtotal > 0 && (
+              {subtotal < 1000 && subtotal > 0 && (
                 <div className="mt-2 mb-3">
                   <div className="flex justify-between text-xs mb-1">
                     <span>Progress to free shipping</span>
-                    <span>₹{subtotal.toFixed(2)} of ₹600</span>
+                    <span>₹{subtotal.toFixed(2)} of ₹1000</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
                       className="bg-green-500 h-2.5 rounded-full"
                       style={{
-                        width: `${Math.min(100, (subtotal / 600) * 100)}%`,
+                        width: `${Math.min(100, (subtotal / 1000) * 100)}%`,
                       }}
                     />
                   </div>
                   <p className="text-xs text-gray-600 mt-1">
-                    Add ₹{(600 - subtotal).toFixed(2)} more to get free shipping
+                    Add ₹{(1000 - subtotal).toFixed(2)} more to get free shipping
                   </p>
                 </div>
               )}
 
-              {subtotal >= 600 && (
+              {subtotal >= 1000 && (
                 <div className="flex items-center bg-green-50 text-green-700 p-2 rounded-md mb-3 text-sm">
                   <CheckCircle size={16} className="mr-1" />
                   <span>You've qualified for free shipping!</span>
@@ -993,9 +993,9 @@ const Checkout = () => {
             <div className="mt-4 text-xs text-gray-500 text-center">
               <p>
                 By proceeding, you agree to our{" "}
-                <a href="#" className="text-orange-600 hover:underline">
+                <p onClick={()=> navigate('/termsAndConditions')}  className="text-orange-600 hover:underline cursor:pointer">
                   Terms & Conditions
-                </a>
+                </p>
               </p>
             </div>
           </div>
