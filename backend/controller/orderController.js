@@ -1,3 +1,4 @@
+import { sendEmail } from "../helpers/sendEmail.js";
 import { createXpressBeesOrder } from "../helpers/xpressbees.js";
 import Order from "../models/orderModel.js";
 
@@ -159,7 +160,57 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
     const response = await createXpressBeesOrder(orderData);
     // console.log(response);
     newOrder.trackingId = response?.awb_number || "N/A";
+    newOrder.label = response?.label || "N/A";
     await newOrder.save();
+
+
+    if (orderData.buyer && orderData.buyer.email) {
+      console.log("Sending order confirmation email to:", orderData.buyer.email);
+      
+      const orderLink = `${process.env.FRONTEND_URL}/customer/orders/${orderData._id}`;
+      const invoiceLink = `${process.env.FRONTEND_URL}/customer/orders/${orderData._id}`;
+      // Generate products HTML
+      const productsHtml = orderData.products
+        .map(
+          (item) => `
+        <tr>
+          <td>${item.product?.name || "Product"}</td>
+          <td>${item.quantity}</td>
+          <td>₹${item.product?.price?.toFixed(2) || "N/A"}</td>
+          <td>₹${(item.product?.price * item.quantity).toFixed(2) || "N/A"}</td>
+        </tr>
+          `
+        )
+        .join("");
+
+      sendEmail({
+        to: orderData.buyer.email,
+        subject: "Your Order Has Been Placed!",
+        html: `
+          <h2>Thank you for your order!</h2>
+          <p>Your order <b>#${orderData._id}</b> has been placed successfully.</p>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin:16px 0;">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productsHtml}
+        </tbody>
+          </table>
+          <p><b>Total Price: ₹${orderData.totalPrice?.toFixed(2) || "N/A"}</b></p>
+          <p>
+        <a href="${orderLink}">View your order</a> | 
+        <a href="${invoiceLink}">Download Invoice</a>
+          </p>
+          <p>We appreciate your business.</p>
+        `,
+      });
+    }
     res.status(201).send({
       success: true,
       message: "Order created successfully",
@@ -202,6 +253,22 @@ export const updateOrder = async (req, res) => {
     const populatedOrder = await Order.findById(updatedOrder._id)
       .populate("products.product")
       .populate("buyer");
+
+      if (populatedOrder.buyer && populatedOrder.buyer.email) {
+        const orderLink = `${process.env.FRONTEND_URL}/customer/orders/${populatedOrder._id}`;
+         sendEmail({
+          to: populatedOrder.buyer.email,
+          subject: `Order Status Updated: ${populatedOrder.status}`,
+          html: `
+            <h2>Your order status has changed</h2>
+            <p>Your order <b>#${populatedOrder._id}</b> is now <b>${populatedOrder.status}</b>.</p>
+            <p>
+              <a href="${orderLink}">View your order</a>
+            </p>
+            <p>Thank you for shopping with us.</p>
+          `,
+        });
+      }
 
     res.status(200).send({
       success: true,

@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, googleAuthSuccess, getCurrentUser, signup, addAdmin, GetAdmins, UpdateAdmin ,userData,updateProfile, GetUsers} from '../controller/authController.js';
+import { login, googleAuthSuccess, getCurrentUser, signup, addAdmin, GetAdmins, UpdateAdmin ,userData,updateProfile, GetUsers, updatePassword, deleteUser} from '../controller/authController.js';
 import { verifyGoogleToken } from '../controller/googleAuthController.js';
 import passport from '../config/passport.js';
 import multer from 'multer';
@@ -37,6 +37,7 @@ authRoute.post("/add-admin", requireSignIn, isAdmin, addAdmin)
 authRoute.post("/get-admins", requireSignIn, isAdmin, GetAdmins)
 authRoute.get("/get-users", requireSignIn, isAdmin, GetUsers)
 authRoute.put("/update-admin/:id", requireSignIn, isAdmin, UpdateAdmin)
+authRoute.post("/update-password", requireSignIn, updatePassword)
 authRoute.post("/userData",userData);
 authRoute.post("/updateProfile",updateProfile)
 // Google OAuth routes
@@ -60,6 +61,7 @@ authRoute.get('/admin-auth', requireSignIn, isAdmin, (req,res)=>{
 authRoute.get('/customer-auth', requireSignIn, isCustomer, (req,res)=>{
   res.status(200).json({ok: true, message: "You are a customer"});
 })
+authRoute.delete('/delete-profile/:id', requireSignIn, isAdmin, deleteUser)
 // Get current user
 authRoute.get('/me', getCurrentUser);
 

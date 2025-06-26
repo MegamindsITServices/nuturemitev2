@@ -20,6 +20,10 @@ const orderSchema = new mongoose.Schema({
         type : String,
         default : null
     },
+    label:{
+        type : String,
+        default : null
+    },
     buyer : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"

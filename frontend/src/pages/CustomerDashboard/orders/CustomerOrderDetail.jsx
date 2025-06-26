@@ -772,7 +772,7 @@ const CustomerOrderDetail = () => {
                         </p>
                       )}
 
-                      <div className="mt-2 grid grid-cols-2 gap-4">
+                      <div className="mt-2 grid grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                           <p className="text-sm text-gray-500">Price</p>
                           <p className="font-medium">
@@ -783,7 +783,12 @@ const CustomerOrderDetail = () => {
                           <p className="text-sm text-gray-500">Quantity</p>
                           <p className="font-medium">{quantity}</p>
                         </div>
-
+                        <div>
+                          <p className="text-sm text-gray-500">Subtotal</p>
+                          <p className="font-medium">
+                            ₹{product.price?.toFixed(2) * quantity}
+                          </p>
+                        </div>
                         {product.discount > 0 && (
                           <div>
                             <p className="text-sm text-gray-500">Discount</p>

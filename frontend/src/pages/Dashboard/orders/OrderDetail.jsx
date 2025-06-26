@@ -627,6 +627,17 @@ const OrderDetail = () => {
                   <Download size={16} className="mr-1.5" />
                   {generatingInvoice ? "Generating..." : "Download Invoice"}
                 </Button>
+                <a
+                  variant="outline"
+                  href={order.label || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+
+                  className="text-blue-600 border flex gap-2 items-center p-1.5 px-4 border-blue-500 rounded-md hover:bg-blue-50"
+                >
+                  <Download size={16} className="mr-1.5" />
+                  Label
+                </a>
               </div>
 
               <Separator className="my-4" />
@@ -744,6 +755,14 @@ const OrderDetail = () => {
                                   ₹{product.price.toFixed(2)}
                                 </p>
                               )}
+                              <div>
+                                <p className="text-sm text-gray-500">
+                                  Subtotal
+                                </p>
+                                <p className="font-medium">
+                                  ₹{product.price?.toFixed(2) * quantity}
+                                </p>
+                              </div>
                               {/* {isPopulated && product.collection && (
                                 <p className="text-xs text-muted-foreground">
                                   {typeof product.collection === "object"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance, getConfig } from '../../../utils/request';
-import { GET_ADMINS, UPDATE_ADMIN } from '../../../lib/api-client';
+import { DELETE_PROFILE, GET_ADMINS, UPDATE_ADMIN } from '../../../lib/api-client';
 import { Edit, Trash2, Check, X, AlertCircle, User, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { toast } from 'sonner';
@@ -140,6 +140,26 @@ const ViewAllAdmins = () => {
     }
   };
 
+  // Handle deleting an admin
+  const deleteAdmin = async (adminId) => {
+    if (!window.confirm('Are you sure you want to delete this admin?')) {
+      return;
+    } 
+    try {
+      await getConfig();
+      const response = await axiosInstance.delete(`${DELETE_PROFILE}/${adminId}`);
+      if (response.data.success) {
+        toast.success('Admin deleted successfully');
+        fetchAdmins(); // Refresh the list
+      } else {
+        toast.error(response.data.message || 'Failed to delete admin');
+      }
+    } catch (error) {
+      console.error('Error deleting admin:', error);
+      toast.error(error.response?.data?.message || 'An error occurred while deleting admin');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -183,7 +203,7 @@ const ViewAllAdmins = () => {
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -227,7 +247,7 @@ const ViewAllAdmins = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    {/* <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         admin.isBlocked 
                           ? 'bg-red-100 text-red-800' 
@@ -235,7 +255,7 @@ const ViewAllAdmins = () => {
                       }`}>
                         {admin.isBlocked ? 'Blocked' : 'Active'}
                       </span>
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <Button 
@@ -247,20 +267,14 @@ const ViewAllAdmins = () => {
                           <Edit className="h-4 w-4 mr-1" /> Update
                         </Button>
                         <Button
-                          onClick={() => toggleAdminStatus(admin)}
+                          onClick={() => deleteAdmin(admin._id)}
                           variant="outline"
                           size="sm"
-                          className={admin.isBlocked ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}
+                          className={'text-red-600 hover:text-red-800'}
                         >
-                          {admin.isBlocked ? (
-                            <>
-                              <Check className="h-4 w-4 mr-1" /> Unblock
-                            </>
-                          ) : (
-                            <>
-                              <X className="h-4 w-4 mr-1" /> Block
-                            </>
-                          )}
+                         
+                              <X className="h-4 w-4 mr-1" /> Delete
+                           
                         </Button>
                       </div>
                     </td>

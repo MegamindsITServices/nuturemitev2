@@ -22,6 +22,8 @@ export const AUTH_PROFILE = `${AUTH_ROUTE}/profile`
 export const ADD_ADMIN = `${AUTH_ROUTE}/add-admin`
 export const GET_ADMINS = `${AUTH_ROUTE}/get-admins`
 export const UPDATE_ADMIN = `${AUTH_ROUTE}/update-admin`
+export const DELETE_PROFILE = `${AUTH_ROUTE}/delete-profile`;
+
 
 // Product endpoints
 export const ADD_PRODUCT = `${PRODUCT_ROUTE}/add-product`

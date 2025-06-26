@@ -204,6 +204,7 @@ const ViewBlog = () => {
                           <Button
                             variant="destructive"
                             size="sm"
+                            className={"bg-red-500 hover:bg-red-600"}
                             onClick={() => handleDeleteClick(blog._id)}
                           >
                             Delete

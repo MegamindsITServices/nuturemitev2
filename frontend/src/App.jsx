@@ -56,6 +56,7 @@ import AllEnquiry from "./pages/Dashboard/enquiry/AllEnquiry";
 import PaymentManagement from "./pages/Dashboard/orders/PaymentManagement";
 import TermsAndConditions from "./pages/termsandcondition/termAndCondition";
 import BusinessPage from "./pages/business/Business";
+import UpdatePasswordPage from "./pages/Dashboard/admins/UpdatePassword";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -84,13 +85,13 @@ const App = () => {
           path="/products/collections/:collectionId"
           element={<Products />}
         />
-        <Route path="/business" element={<BusinessPage/>}/>
+        <Route path="/business" element={<BusinessPage />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
         <Route path="/combos" element={<CombosPage />} />
         <Route path="/combos/:id" element={<ComboProducts />} />
         <Route path="/our-story" element={<OurStory />} />
         <Route path="/blogs" element={<Blogs />} />
-        <Route path="/termsAndConditions" element={<TermsAndConditions/>}/>
+        <Route path="/termsAndConditions" element={<TermsAndConditions />} />
         <Route path="/blog/:slug" element={<BlogDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -114,6 +115,13 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="collections" element={<ViewCollections />} />
+            <Route path="profile" element={<Profile isAdmin={true} />} />
+            <Route
+              path="update-password"
+              element={
+                <UpdatePasswordPage apiEndpoint={"/api/auth/update-password"} />
+              }
+            />
             <Route path="add-product" element={<AddProduct />} />
             <Route path="edit-product/:id" element={<EditProduct />} />
             <Route path="products" element={<AllProducts />} />
@@ -134,6 +142,12 @@ const App = () => {
           <Route path="/customer" element={<CustomerDashboardLayout />}>
             {" "}
             <Route index element={<CustomerDashboard />} />
+            <Route
+              path="update-password"
+              element={
+                <UpdatePasswordPage apiEndpoint={"/api/auth/update-password"} />
+              }
+            />
             <Route path="dashboard" element={<CustomerDashboard />} />
             <Route path="orders" element={<CustomerOrders />} />
             <Route path="orders/:orderId" element={<CustomerOrderDetail />} />

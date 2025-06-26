@@ -71,6 +71,52 @@ export const updateProfile=async(req,res)=>{
     console.log(err.message);
   }
 }
+
+// Update password controller
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide current and new passwords",
+      });
+    }
+    // Find the user by ID from the JWT token
+    const userId = req.user.id; // Assuming you have middleware to set req.user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    // Compare current password
+    const isMatch = await comparePassword(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+    // Hash the new password
+    const hashedNewPassword = await hashPassword(newPassword);
+    // Update the user's password
+    user.password = hashedNewPassword;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating password",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
 // Modified signup controller
 export const signup = async (req, res) => {
   try {
@@ -412,3 +458,30 @@ export const GetUsers = async (req, res) => {
   }
 }
 
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    } 
+    // Delete the user
+    await User.findByIdAndDelete(id);
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while deleting user",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
