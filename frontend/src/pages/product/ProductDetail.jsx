@@ -292,14 +292,18 @@ const ProductDetail = () => {
               ))}
             </div>
           ) : (
+            
+            product.price >=1000 ?   
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/10 p-2 rounded-full">
                   <Check className="h-4 w-4 text-primary" />
                 </div>
-                <span className="font-medium">Free Shipping</span>
+                <span className="font-medium">{product.price >=1000 ? "Free Shipping ":""} </span>
               </div>
-            </div>
+            </div>:""
+            
+     
           )}
           {/* Add to Cart Section */}
           <div className="pt-6 flex gap-4">

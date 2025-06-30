@@ -23,9 +23,9 @@ const Footer = () => {
             {/* Logo */}
             <div className="mb-6">
               <img
-                src="/images/logo.png"
+                src="/images/logo.jpg"
                 alt="Nuturemite Logo"
-                className="w-20 h-20 object-cover"
+                className=" "
               />
             </div>
 
