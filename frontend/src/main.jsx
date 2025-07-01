@@ -35,7 +35,6 @@ const initApp = async () => {
     const root = createRoot(rootElement);
 
     root.render(
-      <React.StrictMode>
         <BrowserRouter>
           <AuthProvider>
             <GoogleOAuthProvider clientId="494051209749-6auaqgfprfpih8gas5mfs9he15a9qj7r.apps.googleusercontent.com">
@@ -44,7 +43,6 @@ const initApp = async () => {
           </AuthProvider>
           <Toaster />
         </BrowserRouter>
-      </React.StrictMode>
     );
 
     // Send web vitals metrics after initial render

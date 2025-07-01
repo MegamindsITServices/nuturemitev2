@@ -17,19 +17,87 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-import { 
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger
+  AccordionTrigger,
 } from "../../../components/ui/accordion";
 import { Button } from "../../../components/ui/button";
 import { axiosInstance, getConfig } from "../../../utils/request";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { GET_COLLECTION, GET_PRODUCT_BY_ID, UPDATE_PRODUCT } from "../../../lib/api-client";
+import {
+  GET_COLLECTION,
+  GET_PRODUCT_BY_ID,
+  UPDATE_PRODUCT,
+} from "../../../lib/api-client";
 import { getProductImageUrl, getVideoUrl } from "../../../utils/imageUtils";
 import { Loader } from "lucide-react";
+
+const FEATURE_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "hot", label: "🔥 Hot" },
+  { value: "new", label: "✨ New" },
+  { value: "bestseller", label: "⭐ Bestseller" },
+  { value: "limited", label: "⏰ Limited Edition" },
+  { value: "sale", label: "💰 On Sale" },
+  { value: "sold out", label: "❌ Sold Out" },
+];
+
+const DIET_TYPE_OPTIONS = [
+  { value: "vegetarian", label: "🥬 Vegetarian" },
+  { value: "non-vegetarian", label: "🥩 Non-Vegetarian" },
+  { value: "vegan", label: "🌱 Vegan" },
+  { value: "gluten-free", label: "🌾 Gluten-Free" },
+  { value: "organic", label: "🌿 Organic" },
+  { value: "keto", label: "🥑 Keto-Friendly" },
+  { value: "diabetic", label: "💊 Diabetic-Friendly" },
+];
+
+const CATEGORY_OPTIONS = [
+  { value: "snacks", label: "🍿 Snacks" },
+  { value: "beverages", label: "🥤 Beverages" },
+  { value: "dairy", label: "🥛 Dairy Products" },
+  { value: "bakery", label: "🍞 Bakery Items" },
+  { value: "frozen", label: "❄️ Frozen Foods" },
+  { value: "canned", label: "🥫 Canned Goods" },
+  { value: "spices", label: "🌶️ Spices & Herbs" },
+  { value: "oils", label: "🫒 Oils & Vinegars" },
+  { value: "grains", label: "🌾 Grains & Cereals" },
+  { value: "sweets", label: "🍬 Sweets & Confectionery" },
+];
+
+const PACKAGING_TYPE_OPTIONS = [
+  { value: "box", label: "📦 Box" },
+  { value: "pouch", label: "👝 Pouch" },
+  { value: "bottle", label: "🍼 Bottle" },
+  { value: "can", label: "🥫 Can" },
+  { value: "jar", label: "🫙 Jar" },
+  { value: "packet", label: "📋 Packet" },
+  { value: "bag", label: "👜 Bag" },
+  { value: "container", label: "🥡 Container" },
+  { value: "tube", label: "🧴 Tube" },
+  { value: "wrap", label: "🎁 Wrapped" },
+];
+
+const FLAVOR_OPTIONS = [
+  { value: "chocolate", label: "🍫 Chocolate" },
+  { value: "vanilla", label: "🍦 Vanilla" },
+  { value: "strawberry", label: "🍓 Strawberry" },
+  { value: "mango", label: "🥭 Mango" },
+  { value: "orange", label: "🍊 Orange" },
+  { value: "mint", label: "🌿 Mint" },
+  { value: "coconut", label: "🥥 Coconut" },
+  { value: "banana", label: "🍌 Banana" },
+  { value: "apple", label: "🍎 Apple" },
+  { value: "mixed-fruit", label: "🍇 Mixed Fruit" },
+  { value: "spicy", label: "🌶️ Spicy" },
+  { value: "sweet", label: "🍯 Sweet" },
+  { value: "salty", label: "🧂 Salty" },
+  { value: "plain", label: "⚪ Plain" },
+];
+
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,49 +110,63 @@ const EditProduct = () => {
     feature: "none",
     collection: "",
     // New fields from the updated product model
-    shortDescription: [{
-      brand: "",
-      category: "",
-      itemWeight: "",
-      dietType: "",
-      totalItems: "",
-      flavor: "",
-      packagingType: ""
-    }],
-    nutritionInfo: [{
-      protien: "",
-      fat: "",
-      carbohydrates: "",
-      iron: "",
-      calcium: "",
-      vitamin: "",
-      Energy: ""
-    }],
-    importantInformation: [{
-      ingredients: "",
-      storageTips: ""
-    }],
-    productDescription: [{
-      images: [],
-      videos: []
-    }],
-    measurements: [{
-      withoutPackaging: [{
-        height: "",
-        weight: "",
-        width: "",
-        length: ""
-      }],
-      withPackaging: [{
-        height: "",
-        weight: "",
-        width: "",
-        length: ""
-      }]
-    }],
+    shortDescription: [
+      {
+        brand: "",
+        category: "",
+        itemWeight: "",
+        dietType: "",
+        totalItems: "",
+        flavor: "",
+        packagingType: "",
+      },
+    ],
+    nutritionInfo: [
+      {
+        protien: "",
+        fat: "",
+        carbohydrates: "",
+        iron: "",
+        calcium: "",
+        vitamin: "",
+        Energy: "",
+      },
+    ],
+    importantInformation: [
+      {
+        ingredients: "",
+        storageTips: "",
+      },
+    ],
+    productDescription: [
+      {
+        images: [],
+        videos: [],
+      },
+    ],
+    measurements: [
+      {
+        withoutPackaging: [
+          {
+            height: "",
+            weight: "",
+            width: "",
+            length: "",
+          },
+        ],
+        withPackaging: [
+          {
+            height: "",
+            weight: "",
+            width: "",
+            length: "",
+          },
+        ],
+      },
+    ],
     manufacturer: "",
     marketedBy: "",
-    keyFeatures: ""
+    keyFeatures: "",
   });
   const [newImages, setNewImages] = useState([]);
   const [newVideos, setNewVideos] = useState([]);
@@ -92,15 +174,23 @@ const EditProduct = () => {
   const [videosPreviews, setVideosPreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingVideos, setExistingVideos] = useState([]);
-  
+
   // Product description media states
   const [productDescImages, setProductDescImages] = useState([]);
   const [productDescVideos, setProductDescVideos] = useState([]);
-  const [productDescImagesPreviews, setProductDescImagesPreviews] = useState([]);
-  const [productDescVideosPreviews, setProductDescVideosPreviews] = useState([]);
-  const [existingProductDescImages, setExistingProductDescImages] = useState([]);
-  const [existingProductDescVideos, setExistingProductDescVideos] = useState([]);
-  
+  const [productDescImagesPreviews, setProductDescImagesPreviews] = useState(
+    []
+  );
+  const [productDescVideosPreviews, setProductDescVideosPreviews] = useState(
+    []
+  );
+  const [existingProductDescImages, setExistingProductDescImages] = useState(
+    []
+  );
+  const [existingProductDescVideos, setExistingProductDescVideos] = useState(
+    []
+  );
+
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchingProduct, setFetchingProduct] = useState(true);
@@ -121,80 +211,94 @@ const EditProduct = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  // Fetch collections
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        await getConfig()
+        await getConfig();
         const response = await axiosInstance.get(GET_COLLECTION);
-        if (response.data && Array.isArray(response.data)) {
-          setCollections(response.data);
+        if (response.data && response.data.collections) {
+          setCollections(response.data.collections);
         }
       } catch (error) {
         console.error("Error fetching collections:", error);
         toast.error("Failed to load collections");
       }
     };
+
     fetchCollections();
   }, []);
 
   // Fetch product data
-  useEffect(() => {    
+  useEffect(() => {
     const fetchProduct = async () => {
       setFetchingProduct(true);
       try {
         await getConfig();
-        const productUrl = GET_PRODUCT_BY_ID.replace(':id', id);
+        const productUrl = GET_PRODUCT_BY_ID.replace(":id", id);
         const response = await axiosInstance.get(productUrl);
-        
+
         const productData = response.data.product || response.data;
-        
+
         // Prepare default values for complex nested objects
-        const defaultShortDesc = [{
-          brand: "",
-          category: "",
-          itemWeight: "",
-          dietType: "",
-          totalItems: "",
-          flavor: "",
-          packagingType: ""
-        }];
-        
-        const defaultNutritionInfo = [{
-          protien: "",
-          fat: "",
-          carbohydrates: "",
-          iron: "",
-          calcium: "",
-          vitamin: "",
-          Energy: ""
-        }];
-        
-        const defaultImportantInfo = [{
-          ingredients: "",
-          storageTips: ""
-        }];
-        
-        const defaultProductDesc = [{
-          images: [],
-          videos: []
-        }];
-        
-        const defaultMeasurements = [{
-          withoutPackaging: [{
-            height: "",
-            weight: "",
-            width: "",
-            length: ""
-          }],
-          withPackaging: [{
-            height: "",
-            weight: "",
-            width: "",
-            length: ""
-          }]
-        }];
-        
+        const defaultShortDesc = [
+          {
+            brand: "",
+            category: "",
+            itemWeight: "",
+            dietType: "",
+            totalItems: "",
+            flavor: "",
+            packagingType: "",
+          },
+        ];
+
+        const defaultNutritionInfo = [
+          {
+            protien: "",
+            fat: "",
+            carbohydrates: "",
+            iron: "",
+            calcium: "",
+            vitamin: "",
+            Energy: "",
+          },
+        ];
+
+        const defaultImportantInfo = [
+          {
+            ingredients: "",
+            storageTips: "",
+          },
+        ];
+
+        const defaultProductDesc = [
+          {
+            images: [],
+            videos: [],
+          },
+        ];
+
+        const defaultMeasurements = [
+          {
+            withoutPackaging: [
+              {
+                height: "",
+                weight: "",
+                width: "",
+                length: "",
+              },
+            ],
+            withPackaging: [
+              {
+                height: "",
+                weight: "",
+                width: "",
+                length: "",
+              },
+            ],
+          },
+        ];
+
         // Set form data with all fields
         setFormData({
           name: productData.name || "",
@@ -207,41 +311,51 @@ const EditProduct = () => {
           // New fields from the updated model
           shortDescription: productData.shortDescription || defaultShortDesc,
           nutritionInfo: productData.nutritionInfo || defaultNutritionInfo,
-          importantInformation: productData.importantInformation || defaultImportantInfo,
-          productDescription: productData.productDescription || defaultProductDesc,
+          importantInformation:
+            productData.importantInformation || defaultImportantInfo,
+          productDescription:
+            productData.productDescription || defaultProductDesc,
           measurements: productData.measurements || defaultMeasurements,
           manufacturer: productData.manufacturer || "",
           marketedBy: productData.marketedBy || "",
-          keyFeatures: productData.keyFeatures || ""
+          keyFeatures: productData.keyFeatures || "",
         });
 
         // Set existing images and videos
         if (productData.images && productData.images.length > 0) {
           setExistingImages(productData.images);
         }
-        
+
         if (productData.videos && productData.videos.length > 0) {
           setExistingVideos(productData.videos);
         }
-        
+
         // Set existing product description images and videos
-        if (productData.productDescription && 
-            productData.productDescription[0] && 
-            productData.productDescription[0].images && 
-            productData.productDescription[0].images.length > 0) {
-          setExistingProductDescImages(productData.productDescription[0].images);
+        if (
+          productData.productDescription &&
+          productData.productDescription[0] &&
+          productData.productDescription[0].images &&
+          productData.productDescription[0].images.length > 0
+        ) {
+          setExistingProductDescImages(
+            productData.productDescription[0].images
+          );
         }
-        
-        if (productData.productDescription && 
-            productData.productDescription[0] && 
-            productData.productDescription[0].videos && 
-            productData.productDescription[0].videos.length > 0) {
-          setExistingProductDescVideos(productData.productDescription[0].videos);
+
+        if (
+          productData.productDescription &&
+          productData.productDescription[0] &&
+          productData.productDescription[0].videos &&
+          productData.productDescription[0].videos.length > 0
+        ) {
+          setExistingProductDescVideos(
+            productData.productDescription[0].videos
+          );
         }
       } catch (error) {
         console.error("Error fetching product:", error);
         toast.error("Failed to load product details");
-        navigate('/dashboard/products'); // Redirect back to product list on error
+        navigate("/admin/products"); // Redirect back to product list on error
       } finally {
         setFetchingProduct(false);
       }
@@ -260,6 +374,25 @@ const EditProduct = () => {
     });
   };
 
+  useEffect(() => {
+    const price = parseFloat(formData.price);
+    const originalPrice = parseFloat(formData.originalPrice);
+    if (
+      !isNaN(price) &&
+      !isNaN(originalPrice) &&
+      originalPrice > 0 &&
+      price <= originalPrice
+    ) {
+      const discount = (
+        ((originalPrice - price) / originalPrice) *
+        100
+      ).toFixed(2);
+      setFormData((prev) => ({ ...prev, discount }));
+    } else {
+      setFormData((prev) => ({ ...prev, discount: "" }));
+    }
+  }, [formData.price, formData.originalPrice]);
+
   // Handle select changes
   const handleSelectChange = (name, value) => {
     setFormData({
@@ -267,99 +400,107 @@ const EditProduct = () => {
       [name]: value,
     });
   };
-  
+
   // Handle nested object field changes
   const handleNestedChange = (section, field, value, index = 0) => {
     setFormData((prevData) => {
       const updatedSection = [...prevData[section]];
       updatedSection[index] = {
         ...updatedSection[index],
-        [field]: value
+        [field]: value,
       };
-      
+
       return {
         ...prevData,
-        [section]: updatedSection
+        [section]: updatedSection,
       };
     });
   };
-  
+
   // Handle deeply nested object field changes (for measurements)
   const handleMeasurementChange = (packageType, field, value) => {
     setFormData((prevData) => {
       const updatedMeasurements = [...prevData.measurements];
-      
-      if (packageType === 'withoutPackaging') {
+
+      if (packageType === "withoutPackaging") {
         updatedMeasurements[0] = {
           ...updatedMeasurements[0],
-          withoutPackaging: [{
-            ...updatedMeasurements[0]?.withoutPackaging[0] || {},
-            [field]: value
-          }]
+          withoutPackaging: [
+            {
+              ...(updatedMeasurements[0]?.withoutPackaging[0] || {}),
+              [field]: value,
+            },
+          ],
         };
-      } else if (packageType === 'withPackaging') {
+      } else if (packageType === "withPackaging") {
         updatedMeasurements[0] = {
           ...updatedMeasurements[0],
-          withPackaging: [{
-            ...updatedMeasurements[0]?.withPackaging[0] || {},
-            [field]: value
-          }]
+          withPackaging: [
+            {
+              ...(updatedMeasurements[0]?.withPackaging[0] || {}),
+              [field]: value,
+            },
+          ],
         };
       }
-      
+
       return {
         ...prevData,
-        measurements: updatedMeasurements
+        measurements: updatedMeasurements,
       };
     });
   };
-  
+
   // Handle product description media
   const handleProductDescImagesChange = (e) => {
     const { files } = e.target;
     if (files && files.length > 0) {
       // Store the selected files for upload
       setProductDescImages(Array.from(files));
-      
+
       // Create previews for all selected images
-      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      const previews = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
       setProductDescImagesPreviews(previews);
-      
+
       // Update formData with filenames (we'll replace this with actual URLs after upload)
-      setFormData(prevData => {
+      setFormData((prevData) => {
         const updatedProductDesc = [...prevData.productDescription];
         updatedProductDesc[0] = {
           ...updatedProductDesc[0],
-          images: Array.from(files).map(file => file.name)
+          images: Array.from(files).map((file) => file.name),
         };
         return {
           ...prevData,
-          productDescription: updatedProductDesc
+          productDescription: updatedProductDesc,
         };
       });
     }
   };
-  
+
   const handleProductDescVideosChange = (e) => {
     const { files } = e.target;
     if (files && files.length > 0) {
       // Store the selected files for upload
       setProductDescVideos(Array.from(files));
-      
+
       // Create previews for all selected videos
-      const previews = Array.from(files).map(file => URL.createObjectURL(file));
+      const previews = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
       setProductDescVideosPreviews(previews);
-      
+
       // Update formData with filenames (we'll replace this with actual URLs after upload)
-      setFormData(prevData => {
+      setFormData((prevData) => {
         const updatedProductDesc = [...prevData.productDescription];
         updatedProductDesc[0] = {
           ...updatedProductDesc[0],
-          videos: Array.from(files).map(file => file.name)
+          videos: Array.from(files).map((file) => file.name),
         };
         return {
           ...prevData,
-          productDescription: updatedProductDesc
+          productDescription: updatedProductDesc,
         };
       });
     }
@@ -370,11 +511,14 @@ const EditProduct = () => {
     const { files } = e.target;
     if (files && files.length > 0) {
       // Store the selected files for upload (max 10 images)
-      const selectedFiles = Array.from(files).slice(0, 10 - existingImages.length);
+      const selectedFiles = Array.from(files).slice(
+        0,
+        10 - existingImages.length
+      );
       setNewImages(selectedFiles);
-      
+
       // Create previews for all selected images
-      const previews = selectedFiles.map(file => URL.createObjectURL(file));
+      const previews = selectedFiles.map((file) => URL.createObjectURL(file));
       setImagesPreviews(previews);
     }
   };
@@ -384,109 +528,147 @@ const EditProduct = () => {
     const { files } = e.target;
     if (files && files.length > 0) {
       // Store the selected files for upload (max 3 videos)
-      const selectedFiles = Array.from(files).slice(0, 3 - existingVideos.length);
+      const selectedFiles = Array.from(files).slice(
+        0,
+        3 - existingVideos.length
+      );
       setNewVideos(selectedFiles);
-      
+
       // Create previews for all selected videos
-      const previews = selectedFiles.map(file => URL.createObjectURL(file));
+      const previews = selectedFiles.map((file) => URL.createObjectURL(file));
       setVideosPreviews(previews);
     }
   };
 
   // Remove existing image
   const removeExistingImage = (index) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Remove existing video
   const removeExistingVideo = (index) => {
-    setExistingVideos(prev => prev.filter((_, i) => i !== index));
+    setExistingVideos((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Remove new image preview
   const removeNewImage = (index) => {
-    setNewImages(prev => prev.filter((_, i) => i !== index));
-    setImagesPreviews(prev => prev.filter((_, i) => i !== index));
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Remove new video preview
   const removeNewVideo = (index) => {
-    setNewVideos(prev => prev.filter((_, i) => i !== index));
-    setVideosPreviews(prev => prev.filter((_, i) => i !== index));
+    setNewVideos((prev) => prev.filter((_, i) => i !== index));
+    setVideosPreviews((prev) => prev.filter((_, i) => i !== index));
   };
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       // Create a new FormData object
       const productFormData = new FormData();
-      
+
       // Append basic form data (string and number fields)
-      const simpleFields = ["name", "description", "price", "originalPrice", "discount", "manufacturer", "marketedBy", "keyFeatures"];
-      simpleFields.forEach(key => {
+      const simpleFields = [
+        "name",
+        "description",
+        "price",
+        "originalPrice",
+        "discount",
+        "manufacturer",
+        "marketedBy",
+        "keyFeatures",
+      ];
+      simpleFields.forEach((key) => {
         if (formData[key] !== null && formData[key] !== "") {
           productFormData.append(key, formData[key]);
         }
       });
-      
+
       // Handle feature field
       if (formData.feature && formData.feature !== "none") {
         productFormData.append("feature", formData.feature);
       }
-      
+
       // Handle collection field
       if (formData.collection) {
         productFormData.append("collection", formData.collection);
       }
-      
+
       // Append complex fields as JSON strings
-      const complexFields = ["shortDescription", "nutritionInfo", "importantInformation", "measurements"];
-      complexFields.forEach(key => {
+      const complexFields = [
+        "shortDescription",
+        "nutritionInfo",
+        "importantInformation",
+        "measurements",
+      ];
+      complexFields.forEach((key) => {
         productFormData.append(key, JSON.stringify(formData[key]));
       });
-      
+
       // Handle productDescription separately
       const productDescriptionData = [...formData.productDescription];
-      
+
       // Remove image and video references if new ones will be uploaded
-      if (productDescImages.length > 0 || existingProductDescImages.length > 0) {
+      if (
+        productDescImages.length > 0 ||
+        existingProductDescImages.length > 0
+      ) {
         productDescriptionData[0].images = [];
       }
-      
-      if (productDescVideos.length > 0 || existingProductDescVideos.length > 0) {
+
+      if (
+        productDescVideos.length > 0 ||
+        existingProductDescVideos.length > 0
+      ) {
         productDescriptionData[0].videos = [];
       }
-      
-      productFormData.append("productDescription", JSON.stringify(productDescriptionData));
-      
+
+      productFormData.append(
+        "productDescription",
+        JSON.stringify(productDescriptionData)
+      );
+
       // Append existing images
       if (existingImages.length > 0) {
-        productFormData.append("existingImages", JSON.stringify(existingImages));
+        productFormData.append(
+          "existingImages",
+          JSON.stringify(existingImages)
+        );
       }
 
       // Append existing videos
       if (existingVideos.length > 0) {
-        productFormData.append("existingVideos", JSON.stringify(existingVideos));
+        productFormData.append(
+          "existingVideos",
+          JSON.stringify(existingVideos)
+        );
       }
-      
+
       // Append existing product description media
       if (existingProductDescImages.length > 0) {
-        productFormData.append("existingProductDescImages", JSON.stringify(existingProductDescImages));
+        productFormData.append(
+          "existingProductDescImages",
+          JSON.stringify(existingProductDescImages)
+        );
       }
-      
+
       if (existingProductDescVideos.length > 0) {
-        productFormData.append("existingProductDescVideos", JSON.stringify(existingProductDescVideos));
+        productFormData.append(
+          "existingProductDescVideos",
+          JSON.stringify(existingProductDescVideos)
+        );
       }
-      
+
       // Validate total images (existing + new) - at least one is required
       if (existingImages.length + newImages.length < 1) {
         toast.error("Please select at least one image");
         setLoading(false);
         return;
       }
-      
+
       // Append new images
       if (newImages.length > 0) {
         for (let i = 0; i < newImages.length; i++) {
@@ -500,36 +682,32 @@ const EditProduct = () => {
           productFormData.append("videos", newVideos[i]);
         }
       }
-      
+
       // Append product description media
       if (productDescImages.length > 0) {
         for (let i = 0; i < productDescImages.length; i++) {
           productFormData.append("productDescImages", productDescImages[i]);
         }
       }
-      
+
       if (productDescVideos.length > 0) {
         for (let i = 0; i < productDescVideos.length; i++) {
           productFormData.append("productDescVideos", productDescVideos[i]);
         }
       }
-      
+
       // Send the request
       await getConfig();
-      const updateUrl = UPDATE_PRODUCT.replace(':id', id);
-      const response = await axiosInstance.put(
-        updateUrl,
-        productFormData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      
+      const updateUrl = UPDATE_PRODUCT.replace(":id", id);
+      const response = await axiosInstance.put(updateUrl, productFormData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       if (response.status === 200) {
         toast.success("Product updated successfully!");
-        navigate('/dashboard/products');
+        navigate("/admin/products");
       }
     } catch (error) {
       console.error("Error updating product:", error);
@@ -557,10 +735,7 @@ const EditProduct = () => {
     >
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Edit Product</h1>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard/products')}
-        >
+        <Button variant="outline" onClick={() => navigate("/admin/products")}>
           Back to Products
         </Button>
       </div>
@@ -702,7 +877,9 @@ const EditProduct = () => {
                   </Label>
                   <Select
                     value={formData.feature}
-                    onValueChange={(value) => handleSelectChange("feature", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("feature", value)
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select feature" />
@@ -728,7 +905,9 @@ const EditProduct = () => {
                 </Label>
                 <Select
                   value={formData.collection}
-                  onValueChange={(value) => handleSelectChange("collection", value)}
+                  onValueChange={(value) =>
+                    handleSelectChange("collection", value)
+                  }
                   required
                 >
                   <SelectTrigger className="w-full">
@@ -741,7 +920,8 @@ const EditProduct = () => {
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select>              </div>
+                </Select>{" "}
+              </div>
             </motion.div>
 
             {/* Manufacturer Info */}
@@ -815,65 +995,143 @@ const EditProduct = () => {
                         <Label htmlFor="brand">Brand</Label>
                         <Input
                           id="brand"
-                          value={formData.shortDescription[0]?.brand || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'brand', e.target.value)}
+                          value={formData.shortDescription[0]?.brand || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "brand",
+                              e.target.value
+                            )
+                          }
                           placeholder="Enter brand name"
                         />
                       </div>
                       <div>
                         <Label htmlFor="category">Category</Label>
-                        <Input
-                          id="category"
-                          value={formData.shortDescription[0]?.category || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'category', e.target.value)}
-                          placeholder="Enter category"
-                        />
+                        <Select
+                          value={formData.shortDescription[0].category}
+                          onValueChange={(value) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "category",
+                              value
+                            )
+                          }
+                        >
+                          <SelectTrigger id="category">
+                            <SelectValue placeholder="Select Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORY_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="itemWeight">Item Weight</Label>
                         <Input
                           id="itemWeight"
-                          value={formData.shortDescription[0]?.itemWeight || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'itemWeight', e.target.value)}
+                          value={formData.shortDescription[0]?.itemWeight || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "itemWeight",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 250g"
                         />
                       </div>
                       <div>
                         <Label htmlFor="dietType">Diet Type</Label>
-                        <Input
-                          id="dietType"
-                          value={formData.shortDescription[0]?.dietType || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'dietType', e.target.value)}
-                          placeholder="e.g., Vegetarian, Non-vegetarian"
-                        />
+                        <Select
+                          value={formData.shortDescription[0].dietType}
+                          onValueChange={(value) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "dietType",
+                              value
+                            )
+                          }
+                        >
+                          <SelectTrigger id="dietType">
+                            <SelectValue placeholder="Select Diet Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DIET_TYPE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="totalItems">Total Items</Label>
                         <Input
                           type="number"
                           id="totalItems"
-                          value={formData.shortDescription[0]?.totalItems || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'totalItems', e.target.value)}
+                          value={formData.shortDescription[0]?.totalItems || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "totalItems",
+                              e.target.value
+                            )
+                          }
                           placeholder="Number of items in package"
                         />
                       </div>
                       <div>
                         <Label htmlFor="flavor">Flavor</Label>
-                        <Input
-                          id="flavor"
-                          value={formData.shortDescription[0]?.flavor || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'flavor', e.target.value)}
-                          placeholder="e.g., Chocolate, Vanilla"
-                        />
+                        <Select
+                          value={formData.shortDescription[0].flavor}
+                          onValueChange={(value) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "flavor",
+                              value
+                            )
+                          }
+                        >
+                          <SelectTrigger id="flavor">
+                            <SelectValue placeholder="Select Flavor" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FLAVOR_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="packagingType">Packaging Type</Label>
-                        <Input
-                          id="packagingType"
-                          value={formData.shortDescription[0]?.packagingType || ''}
-                          onChange={(e) => handleNestedChange('shortDescription', 'packagingType', e.target.value)}
-                          placeholder="e.g., Box, Pouch"
-                        />
+                        <Select
+                          value={formData.shortDescription[0].packagingType}
+                          onValueChange={(value) =>
+                            handleNestedChange(
+                              "shortDescription",
+                              "packagingType",
+                              value
+                            )
+                          }
+                        >
+                          <SelectTrigger id="packagingType">
+                            <SelectValue placeholder="Select Packaging Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PACKAGING_TYPE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </AccordionContent>
@@ -890,8 +1148,14 @@ const EditProduct = () => {
                         <Label htmlFor="protien">Protein</Label>
                         <Input
                           id="protien"
-                          value={formData.nutritionInfo[0]?.protien || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'protien', e.target.value)}
+                          value={formData.nutritionInfo[0]?.protien || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "protien",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 5g"
                         />
                       </div>
@@ -899,8 +1163,14 @@ const EditProduct = () => {
                         <Label htmlFor="fat">Fat</Label>
                         <Input
                           id="fat"
-                          value={formData.nutritionInfo[0]?.fat || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'fat', e.target.value)}
+                          value={formData.nutritionInfo[0]?.fat || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "fat",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 2g"
                         />
                       </div>
@@ -908,8 +1178,14 @@ const EditProduct = () => {
                         <Label htmlFor="carbohydrates">Carbohydrates</Label>
                         <Input
                           id="carbohydrates"
-                          value={formData.nutritionInfo[0]?.carbohydrates || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'carbohydrates', e.target.value)}
+                          value={formData.nutritionInfo[0]?.carbohydrates || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "carbohydrates",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 15g"
                         />
                       </div>
@@ -917,8 +1193,14 @@ const EditProduct = () => {
                         <Label htmlFor="iron">Iron</Label>
                         <Input
                           id="iron"
-                          value={formData.nutritionInfo[0]?.iron || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'iron', e.target.value)}
+                          value={formData.nutritionInfo[0]?.iron || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "iron",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 2mg"
                         />
                       </div>
@@ -926,8 +1208,14 @@ const EditProduct = () => {
                         <Label htmlFor="calcium">Calcium</Label>
                         <Input
                           id="calcium"
-                          value={formData.nutritionInfo[0]?.calcium || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'calcium', e.target.value)}
+                          value={formData.nutritionInfo[0]?.calcium || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "calcium",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 50mg"
                         />
                       </div>
@@ -935,8 +1223,14 @@ const EditProduct = () => {
                         <Label htmlFor="vitamin">Vitamin</Label>
                         <Input
                           id="vitamin"
-                          value={formData.nutritionInfo[0]?.vitamin || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'vitamin', e.target.value)}
+                          value={formData.nutritionInfo[0]?.vitamin || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "vitamin",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., Vitamin A, B, C"
                         />
                       </div>
@@ -944,8 +1238,14 @@ const EditProduct = () => {
                         <Label htmlFor="Energy">Energy</Label>
                         <Input
                           id="Energy"
-                          value={formData.nutritionInfo[0]?.Energy || ''}
-                          onChange={(e) => handleNestedChange('nutritionInfo', 'Energy', e.target.value)}
+                          value={formData.nutritionInfo[0]?.Energy || ""}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "nutritionInfo",
+                              "Energy",
+                              e.target.value
+                            )
+                          }
                           placeholder="e.g., 120 kcal"
                         />
                       </div>
@@ -964,8 +1264,16 @@ const EditProduct = () => {
                         <Label htmlFor="ingredients">Ingredients</Label>
                         <Textarea
                           id="ingredients"
-                          value={formData.importantInformation[0]?.ingredients || ''}
-                          onChange={(e) => handleNestedChange('importantInformation', 'ingredients', e.target.value)}
+                          value={
+                            formData.importantInformation[0]?.ingredients || ""
+                          }
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "importantInformation",
+                              "ingredients",
+                              e.target.value
+                            )
+                          }
                           placeholder="List all ingredients"
                           className="min-h-20"
                         />
@@ -974,8 +1282,16 @@ const EditProduct = () => {
                         <Label htmlFor="storageTips">Storage Tips</Label>
                         <Textarea
                           id="storageTips"
-                          value={formData.importantInformation[0]?.storageTips || ''}
-                          onChange={(e) => handleNestedChange('importantInformation', 'storageTips', e.target.value)}
+                          value={
+                            formData.importantInformation[0]?.storageTips || ""
+                          }
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "importantInformation",
+                              "storageTips",
+                              e.target.value
+                            )
+                          }
                           placeholder="Storage and handling instructions"
                           className="min-h-20"
                         />
@@ -999,11 +1315,13 @@ const EditProduct = () => {
                         >
                           Additional Images for Product Description
                         </Label>
-                        
+
                         {/* Existing product description images */}
                         {existingProductDescImages.length > 0 && (
                           <div className="mb-4">
-                            <h4 className="text-sm font-medium text-slate-600 mb-2">Current Description Images:</h4>
+                            <h4 className="text-sm font-medium text-slate-600 mb-2">
+                              Current Description Images:
+                            </h4>
                             <div className="flex flex-wrap gap-3">
                               {existingProductDescImages.map((image, index) => (
                                 <div key={index} className="relative group">
@@ -1015,7 +1333,11 @@ const EditProduct = () => {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setExistingProductDescImages(existingProductDescImages.filter((_, i) => i !== index));
+                                      setExistingProductDescImages(
+                                        existingProductDescImages.filter(
+                                          (_, i) => i !== index
+                                        )
+                                      );
                                     }}
                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
@@ -1037,7 +1359,7 @@ const EditProduct = () => {
                             </div>
                           </div>
                         )}
-                        
+
                         <div className="flex flex-col">
                           <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
                             <input
@@ -1055,18 +1377,20 @@ const EditProduct = () => {
                             >
                               {productDescImagesPreviews.length > 0 ? (
                                 <div className="flex flex-wrap gap-2 justify-center">
-                                  {productDescImagesPreviews.map((preview, index) => (
-                                    <div key={index} className="relative">
-                                      <img
-                                        src={preview}
-                                        alt={`Description image ${index + 1}`}
-                                        className="h-28 object-contain"
-                                      />
-                                      <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
-                                        Image {index + 1}
-                                      </span>
-                                    </div>
-                                  ))}
+                                  {productDescImagesPreviews.map(
+                                    (preview, index) => (
+                                      <div key={index} className="relative">
+                                        <img
+                                          src={preview}
+                                          alt={`Description image ${index + 1}`}
+                                          className="h-28 object-contain"
+                                        />
+                                        <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                                          Image {index + 1}
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
                                 </div>
                               ) : (
                                 <>
@@ -1085,17 +1409,22 @@ const EditProduct = () => {
                                     />
                                   </svg>
                                   <span className="text-slate-500">
-                                    Click to upload additional product description images
+                                    Click to upload additional product
+                                    description images
                                   </span>
                                 </>
                               )}
                             </label>
                           </div>
-                          
+
                           {productDescImagesPreviews.length > 0 && (
                             <div className="flex justify-between items-center">
                               <p className="text-sm text-slate-600">
-                                {productDescImages.length} {productDescImages.length === 1 ? 'image' : 'images'} selected
+                                {productDescImages.length}{" "}
+                                {productDescImages.length === 1
+                                  ? "image"
+                                  : "images"}{" "}
+                                selected
                               </p>
                               <Button
                                 type="button"
@@ -1113,7 +1442,7 @@ const EditProduct = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Product Description Videos */}
                       <div>
                         <Label
@@ -1122,11 +1451,13 @@ const EditProduct = () => {
                         >
                           Additional Videos for Product Description
                         </Label>
-                        
+
                         {/* Existing product description videos */}
                         {existingProductDescVideos.length > 0 && (
                           <div className="mb-4">
-                            <h4 className="text-sm font-medium text-slate-600 mb-2">Current Description Videos:</h4>
+                            <h4 className="text-sm font-medium text-slate-600 mb-2">
+                              Current Description Videos:
+                            </h4>
                             <div className="flex flex-wrap gap-3">
                               {existingProductDescVideos.map((video, index) => (
                                 <div key={index} className="relative group">
@@ -1138,7 +1469,11 @@ const EditProduct = () => {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setExistingProductDescVideos(existingProductDescVideos.filter((_, i) => i !== index));
+                                      setExistingProductDescVideos(
+                                        existingProductDescVideos.filter(
+                                          (_, i) => i !== index
+                                        )
+                                      );
                                     }}
                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
@@ -1160,7 +1495,7 @@ const EditProduct = () => {
                             </div>
                           </div>
                         )}
-                        
+
                         <div className="flex flex-col">
                           <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
                             <input
@@ -1178,18 +1513,20 @@ const EditProduct = () => {
                             >
                               {productDescVideosPreviews.length > 0 ? (
                                 <div className="flex flex-wrap gap-2 justify-center">
-                                  {productDescVideosPreviews.map((preview, index) => (
-                                    <div key={index} className="relative">
-                                      <video
-                                        src={preview}
-                                        className="h-28 object-contain"
-                                        controls
-                                      />
-                                      <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
-                                        Video {index + 1}
-                                      </span>
-                                    </div>
-                                  ))}
+                                  {productDescVideosPreviews.map(
+                                    (preview, index) => (
+                                      <div key={index} className="relative">
+                                        <video
+                                          src={preview}
+                                          className="h-28 object-contain"
+                                          controls
+                                        />
+                                        <span className="absolute bottom-0 right-0 bg-slate-800 text-white text-xs px-1 rounded">
+                                          Video {index + 1}
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
                                 </div>
                               ) : (
                                 <>
@@ -1208,17 +1545,22 @@ const EditProduct = () => {
                                     />
                                   </svg>
                                   <span className="text-slate-500">
-                                    Click to upload additional product description videos
+                                    Click to upload additional product
+                                    description videos
                                   </span>
                                 </>
                               )}
                             </label>
                           </div>
-                          
+
                           {productDescVideosPreviews.length > 0 && (
                             <div className="flex justify-between items-center">
                               <p className="text-sm text-slate-600">
-                                {productDescVideos.length} {productDescVideos.length === 1 ? 'video' : 'videos'} selected
+                                {productDescVideos.length}{" "}
+                                {productDescVideos.length === 1
+                                  ? "video"
+                                  : "videos"}{" "}
+                                selected
                               </p>
                               <Button
                                 type="button"
@@ -1249,14 +1591,25 @@ const EditProduct = () => {
                     <div className="space-y-6 mt-2">
                       {/* Without Packaging */}
                       <div>
-                        <h3 className="text-md font-medium text-slate-800 mb-3">Without Packaging</h3>
+                        <h3 className="text-md font-medium text-slate-800 mb-3">
+                          Without Packaging
+                        </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
                             <Label htmlFor="withoutHeight">Height</Label>
                             <Input
                               id="withoutHeight"
-                              value={formData.measurements[0]?.withoutPackaging[0]?.height || ''}
-                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'height', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withoutPackaging[0]
+                                  ?.height || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withoutPackaging",
+                                  "height",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 10cm"
                             />
                           </div>
@@ -1264,8 +1617,17 @@ const EditProduct = () => {
                             <Label htmlFor="withoutWeight">Weight</Label>
                             <Input
                               id="withoutWeight"
-                              value={formData.measurements[0]?.withoutPackaging[0]?.weight || ''}
-                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'weight', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withoutPackaging[0]
+                                  ?.weight || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withoutPackaging",
+                                  "weight",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 200g"
                             />
                           </div>
@@ -1273,8 +1635,17 @@ const EditProduct = () => {
                             <Label htmlFor="withoutWidth">Width</Label>
                             <Input
                               id="withoutWidth"
-                              value={formData.measurements[0]?.withoutPackaging[0]?.width || ''}
-                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'width', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withoutPackaging[0]
+                                  ?.width || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withoutPackaging",
+                                  "width",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 5cm"
                             />
                           </div>
@@ -1282,8 +1653,17 @@ const EditProduct = () => {
                             <Label htmlFor="withoutLength">Length</Label>
                             <Input
                               id="withoutLength"
-                              value={formData.measurements[0]?.withoutPackaging[0]?.length || ''}
-                              onChange={(e) => handleMeasurementChange('withoutPackaging', 'length', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withoutPackaging[0]
+                                  ?.length || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withoutPackaging",
+                                  "length",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 15cm"
                             />
                           </div>
@@ -1292,14 +1672,25 @@ const EditProduct = () => {
 
                       {/* With Packaging */}
                       <div>
-                        <h3 className="text-md font-medium text-slate-800 mb-3">With Packaging</h3>
+                        <h3 className="text-md font-medium text-slate-800 mb-3">
+                          With Packaging
+                        </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
                             <Label htmlFor="withHeight">Height</Label>
                             <Input
                               id="withHeight"
-                              value={formData.measurements[0]?.withPackaging[0]?.height || ''}
-                              onChange={(e) => handleMeasurementChange('withPackaging', 'height', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withPackaging[0]
+                                  ?.height || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withPackaging",
+                                  "height",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 12cm"
                             />
                           </div>
@@ -1307,8 +1698,17 @@ const EditProduct = () => {
                             <Label htmlFor="withWeight">Weight</Label>
                             <Input
                               id="withWeight"
-                              value={formData.measurements[0]?.withPackaging[0]?.weight || ''}
-                              onChange={(e) => handleMeasurementChange('withPackaging', 'weight', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withPackaging[0]
+                                  ?.weight || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withPackaging",
+                                  "weight",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 250g"
                             />
                           </div>
@@ -1316,8 +1716,17 @@ const EditProduct = () => {
                             <Label htmlFor="withWidth">Width</Label>
                             <Input
                               id="withWidth"
-                              value={formData.measurements[0]?.withPackaging[0]?.width || ''}
-                              onChange={(e) => handleMeasurementChange('withPackaging', 'width', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withPackaging[0]
+                                  ?.width || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withPackaging",
+                                  "width",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 7cm"
                             />
                           </div>
@@ -1325,8 +1734,17 @@ const EditProduct = () => {
                             <Label htmlFor="withLength">Length</Label>
                             <Input
                               id="withLength"
-                              value={formData.measurements[0]?.withPackaging[0]?.length || ''}
-                              onChange={(e) => handleMeasurementChange('withPackaging', 'length', e.target.value)}
+                              value={
+                                formData.measurements[0]?.withPackaging[0]
+                                  ?.length || ""
+                              }
+                              onChange={(e) =>
+                                handleMeasurementChange(
+                                  "withPackaging",
+                                  "length",
+                                  e.target.value
+                                )
+                              }
                               placeholder="e.g., 17cm"
                             />
                           </div>
@@ -1344,16 +1762,21 @@ const EditProduct = () => {
                 className="text-slate-700 font-medium mb-2 block"
                 htmlFor="productImages"
               >
-                Product Images<span className="text-red-500">*</span> (Max 10 images)
+                Product Images<span className="text-red-500">*</span> (Max 10
+                images)
               </Label>
-              
+
               {/* Existing images */}
               {existingImages.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-slate-600 mb-2">Current Images:</h4>
+                  <h4 className="text-sm font-medium text-slate-600 mb-2">
+                    Current Images:
+                  </h4>
                   <div className="flex flex-wrap gap-3">
                     {existingImages.map((image, index) => (
-                      <div key={`existing-${index}`} className="relative">                        <img
+                      <div key={`existing-${index}`} className="relative">
+                        {" "}
+                        <img
                           src={getProductImageUrl(image)}
                           alt={`Product image ${index + 1}`}
                           className="h-24 w-24 object-cover border rounded"
@@ -1370,7 +1793,7 @@ const EditProduct = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* New image upload */}
               {existingImages.length < 10 && (
                 <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
@@ -1405,16 +1828,19 @@ const EditProduct = () => {
                       </svg>
                     </div>
                     <div className="text-sm text-slate-500">
-                      Click to add new images ({10 - existingImages.length} remaining)
+                      Click to add new images ({10 - existingImages.length}{" "}
+                      remaining)
                     </div>
                   </label>
                 </div>
               )}
-              
+
               {/* New image previews */}
               {imagesPreviews.length > 0 && (
                 <div className="mt-3">
-                  <h4 className="text-sm font-medium text-slate-600 mb-2">New Images:</h4>
+                  <h4 className="text-sm font-medium text-slate-600 mb-2">
+                    New Images:
+                  </h4>
                   <div className="flex flex-wrap gap-3">
                     {imagesPreviews.map((preview, index) => (
                       <div key={`new-${index}`} className="relative">
@@ -1445,14 +1871,18 @@ const EditProduct = () => {
               >
                 Product Videos (Max 3 videos)
               </Label>
-              
+
               {/* Existing videos */}
               {existingVideos.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-slate-600 mb-2">Current Videos:</h4>
+                  <h4 className="text-sm font-medium text-slate-600 mb-2">
+                    Current Videos:
+                  </h4>
                   <div className="flex flex-wrap gap-3">
                     {existingVideos.map((video, index) => (
-                      <div key={`existing-video-${index}`} className="relative">                        <video
+                      <div key={`existing-video-${index}`} className="relative">
+                        {" "}
+                        <video
                           src={getVideoUrl(video)}
                           className="h-24 w-24 object-cover border rounded"
                           controls
@@ -1469,7 +1899,7 @@ const EditProduct = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* New video upload */}
               {existingVideos.length < 3 && (
                 <div className="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer mb-3">
@@ -1503,16 +1933,19 @@ const EditProduct = () => {
                       </svg>
                     </div>
                     <div className="text-sm text-slate-500">
-                      Click to add new videos ({3 - existingVideos.length} remaining)
+                      Click to add new videos ({3 - existingVideos.length}{" "}
+                      remaining)
                     </div>
                   </label>
                 </div>
               )}
-              
+
               {/* New video previews */}
               {videosPreviews.length > 0 && (
                 <div className="mt-3">
-                  <h4 className="text-sm font-medium text-slate-600 mb-2">New Videos:</h4>
+                  <h4 className="text-sm font-medium text-slate-600 mb-2">
+                    New Videos:
+                  </h4>
                   <div className="flex flex-wrap gap-3">
                     {videosPreviews.map((preview, index) => (
                       <div key={`new-video-${index}`} className="relative">

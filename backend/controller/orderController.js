@@ -157,7 +157,7 @@ console.log("Creating order with totalPrice:", req.body.totalPrice);
     const orderData = await Order.findById(newOrder._id)
       .populate("products.product")
       .populate("buyer");
-    const response = await createXpressBeesOrder(orderData);
+    // const response = await createXpressBeesOrder(orderData); // not needed for now: Manual
     // console.log(response);
     newOrder.trackingId = response?.awb_number || "N/A";
     newOrder.label = response?.label || "N/A";

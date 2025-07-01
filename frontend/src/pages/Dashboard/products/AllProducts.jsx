@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Edit, Trash2, AlertCircle } from "lucide-react";
 import { axiosInstance, getConfig } from "../../../utils/request";
-import { GET_PRODUCTS, DELETE_PRODUCT, GET_PRODUCT_BY_ID } from "../../../lib/api-client";
+import {
+  GET_PRODUCTS,
+  DELETE_PRODUCT,
+  GET_PRODUCT_BY_ID,
+} from "../../../lib/api-client";
 import { toast } from "sonner";
 import ProductEditDialog from "../../../components/product/ProductEditDialog";
 import { getProductImageUrl } from "../../../utils/imageUtils";
@@ -16,7 +20,7 @@ const AllProducts = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(false);
-  
+
   const getAllProducts = async () => {
     setLoading(true);
     try {
@@ -38,15 +42,17 @@ const AllProducts = () => {
   // Handle delete product
   const handleDelete = async () => {
     if (!selectedProduct) return;
-    
+
     setDeleteLoading(true);
     try {
       await getConfig();
-      const deleteUrl = DELETE_PRODUCT.replace(':id', selectedProduct._id);
+      const deleteUrl = DELETE_PRODUCT.replace(":id", selectedProduct._id);
       await axiosInstance.delete(deleteUrl);
-      
+
       // Update the products list
-      setGetProducts(prev => prev.filter(product => product._id !== selectedProduct._id));
+      setGetProducts((prev) =>
+        prev.filter((product) => product._id !== selectedProduct._id)
+      );
       toast.success("Product deleted successfully");
       setShowDeleteModal(false);
     } catch (error) {
@@ -57,19 +63,21 @@ const AllProducts = () => {
       setSelectedProduct(null);
     }
   };
+  const navigate = useNavigate();
   // Open delete confirmation modal
   const openDeleteModal = (product) => {
     setSelectedProduct(product);
     setShowDeleteModal(true);
-  };  // Open edit dialog
+  }; // Open edit dialog
   const openEditDialog = async (product) => {
-    setLoadingProduct(true);
+    // setLoadingProduct(true);
+    navigate(`/admin/edit-product/${product._id}`);
     try {
       // Fetch full product details using the new endpoint
       await getConfig();
-      const productUrl = GET_PRODUCT_BY_ID.replace(':id', product._id);
+      const productUrl = GET_PRODUCT_BY_ID.replace(":id", product._id);
       const response = await axiosInstance.get(productUrl);
-      
+
       if (response.data.success && response.data.product) {
         setEditProduct(response.data.product);
         setShowEditDialog(true);
@@ -105,7 +113,7 @@ const AllProducts = () => {
             Add New Product
           </Link>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -126,9 +134,13 @@ const AllProducts = () => {
               <tbody className="divide-y divide-gray-200">
                 {getProducts.length > 0 ? (
                   getProducts.map((product) => (
-                    <tr key={product._id || product.id} className="hover:bg-gray-50">
+                    <tr
+                      key={product._id || product.id}
+                      className="hover:bg-gray-50"
+                    >
                       <td className="py-3 px-4">
-                        {product.images && product.images.length > 0 ? (                          <img
+                        {product.images && product.images.length > 0 ? (
+                          <img
                             src={getProductImageUrl(product.images[0])}
                             alt={product.name}
                             className="w-16 h-16 object-cover rounded"
@@ -150,7 +162,9 @@ const AllProducts = () => {
                       <td className="py-3 px-4">
                         {product.collection?.name || "N/A"}
                       </td>
-                      <td className="py-3 px-4">                        <div className="flex space-x-2">
+                      <td className="py-3 px-4">
+                        {" "}
+                        <div className="flex space-x-2">
                           <button
                             onClick={() => openEditDialog(product)}
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded"
@@ -192,7 +206,8 @@ const AllProducts = () => {
               <h3 className="text-xl font-semibold">Delete Product</h3>
             </div>
             <p className="mb-6">
-              Are you sure you want to delete "{selectedProduct?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedProduct?.name}"? This
+              action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -209,12 +224,13 @@ const AllProducts = () => {
               >
                 {deleteLoading ? "Deleting..." : "Delete"}
               </button>
-            </div>          </div>
+            </div>{" "}
+          </div>
         </div>
       )}
 
       {/* Product Edit Dialog */}
-      <ProductEditDialog 
+      <ProductEditDialog
         isOpen={showEditDialog}
         onClose={() => {
           setShowEditDialog(false);

@@ -672,7 +672,7 @@ const AllOrders = () => {
               </p>
             ) : (
               <div className="space-y-4">
-                {selectedProducts.map(({product, quantity}, index) => {
+                {selectedProducts.map(({ product, quantity }, index) => {
                   // Check if product is a populated object or just an ID
                   const isPopulated = typeof product !== "string";
                   // If your schema is { product, quantity }, adjust accordingly:

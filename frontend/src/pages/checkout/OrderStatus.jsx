@@ -9,71 +9,53 @@ const OrderSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
-
+  const [createdOrderId, setCreatedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [orderSuccess, setOrderSuccess] = useState(false);
   useEffect(() => {
     const verifyPayment = async () => {
       try {
         setLoading(true);
-
-        // This orderId should be the one returned from Cashfree
-        const paymentOrderId = orderId || searchParams.get("order_id");
+        const paymentOrderId = searchParams.get("order_id");
         if (!paymentOrderId) {
           setError("No order ID found");
           setLoading(false);
           return;
         }
-
-        // Check if there's a payment result from PhonePe in the URL parameters
-        const phonepeCode = searchParams.get("code");
         const phonepeStatus = searchParams.get("status");
-        // If phonepeStatus is present, we can use it directly, otherwise verify payment status with API
-        if (phonepeStatus === "SUCCESS" || phonepeStatus === "COMPLETED") {
-          const response = await paymentService.verifyPayment(paymentOrderId);
-
-          // Check if payment was successful and if an order was created
-          if (response.success && response.order) {
-            setOrderDetails(response.order);
-            setPaymentStatus("PAID");
-            clearCart(); // Clear cart only on successful payment
+        let response = await paymentService.verifyPayment(paymentOrderId);
+        // Always set order details if present
+        if (response.paymentData?.createdOrder) {
+          console.log("Order details from response:", response.paymentData.createdOrder);
+          
+          setOrderDetails(response.paymentData?.createdOrder);
+        }
+        setCreatedOrderId(response.paymentData?.createdOrder?._id || orderId);
+        // Payment status logic
+        if (response.success) {
+          if (response.order?.payment?.method === "Cash on Delivery") {
+            setPaymentStatus("COD_CONFIRMED");
+            clearCart();
           } else {
-            // PhonePe reported success but we need to verify from our server
-            setPaymentStatus("PENDING");
-            setError(
-              "Payment verification in process. Please wait or check your orders section."
-            );
+            setPaymentStatus("PAID");
+            clearCart();
           }
         } else if (
-          phonepeStatus === "FAILED" ||
-          phonepeStatus === "CANCELLED"
+          response.paymentData?.order_status === "PENDING" ||
+          phonepeStatus === "PENDING"
         ) {
-          // Payment failed according to PhonePe
-          setPaymentStatus("FAILED");
-          setError("Payment was not successful. Please try again.");
+          setPaymentStatus("PENDING");
+          setError(
+            "Payment is pending. Please wait or check your orders section."
+          );
         } else {
-          // No phonepeStatus, use the regular verification
-          const response = await paymentService.verifyPayment(paymentOrderId);
-
-          // Check if payment was successful and if an order was created
-          if (response.success && response.order) {
-            setOrderDetails(response.order);
-
-            // Handle Cash on Delivery orders
-            if (response.order.payment?.method === "Cash on Delivery") {
-              setPaymentStatus("COD_CONFIRMED");
-              clearCart(); // Clear cart for COD orders too
-            } else {
-              setPaymentStatus("PAID");
-              clearCart(); // Clear cart only on successful payment
-            }
-          } else {
-            // Payment failed or order not created
-            setPaymentStatus(response.paymentData?.order_status || "FAILED");
-            setError("Payment was not successful. No order was created.");
-          }
+          setPaymentStatus("FAILED");
+          setError(
+            "Payment failed. Your order has been placed and will be processed as Cash on Delivery or please contact support."
+          );
         }
       } catch (err) {
         console.error("Error verifying payment:", err);
@@ -84,7 +66,6 @@ const OrderSuccess = () => {
         setLoading(false);
       }
     };
-
     verifyPayment();
   }, []);
 
@@ -120,10 +101,10 @@ const OrderSuccess = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate(`/customer/orders/${createdOrderId}`)}
               className="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-md font-medium hover:bg-gray-50"
             >
-              Go to Home
+              Go to Orders
             </button>
           </div>
         </div>
@@ -133,28 +114,35 @@ const OrderSuccess = () => {
   const isSuccess =
     paymentStatus === "PAID" || paymentStatus === "COD_CONFIRMED";
   const isCod = paymentStatus === "COD_CONFIRMED";
+  const isPending = paymentStatus === "PENDING";
+  const isFailed = paymentStatus === "FAILED";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
       <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
         {isSuccess ? (
           <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
+        ) : isPending ? (
+          <CheckCircle size={64} className="text-yellow-500 mx-auto mb-6" />
         ) : (
           <XCircle size={64} className="text-red-500 mx-auto mb-6" />
         )}
-
         <h1 className="text-3xl font-bold mb-2">
-          {isSuccess ? "Order Confirmed!" : "Order Failed"}
+          {isSuccess
+            ? "Order Confirmed!"
+            : isPending
+            ? "Payment Pending"
+            : "Order Placed, Payment Failed"}
         </h1>
-
         <p className="text-gray-600 mb-6">
           {isSuccess
             ? isCod
               ? "Your Cash on Delivery order has been placed successfully."
               : "Your payment was successful and order has been placed."
-            : "We could not process your order. Please try again."}
+            : isPending
+            ? "Your payment is pending. Your order has been placed and will be processed once payment is confirmed."
+            : "Payment failed. Your order has been placed and will be processed as Cash on Delivery or please contact support."}
         </p>
-
         {isCod && (
           <div className="mb-6 p-4 bg-yellow-50 rounded-md">
             <h3 className="font-semibold text-yellow-800 mb-1">
@@ -173,46 +161,28 @@ const OrderSuccess = () => {
             </ul>
           </div>
         )}
-
-        {orderId && (
+        {orderDetails && (
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <p className="text-sm text-gray-500">Order ID</p>
-            <p className="font-medium">{orderId}</p>
+            <p className="font-medium">{orderDetails._id || orderId}</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Total: ₹{orderDetails.totalPrice?.toFixed(2)}
+            </p>
           </div>
         )}
-
         <div className="space-y-3">
-          {isSuccess ? (
-            <>
-              <button
-                onClick={() => navigate("/customer/orders")}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-medium"
-              >
-                View Orders
-              </button>
-              <button
-                onClick={() => navigate("/")}
-                className="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-md font-medium hover:bg-gray-50"
-              >
-                Continue Shopping
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => navigate("/checkout")}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-medium"
-              >
-                Try Again
-              </button>
-              <button
-                onClick={() => navigate("/")}
-                className="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-md font-medium hover:bg-gray-50"
-              >
-                Go to Home
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => navigate(`/customer/orders/${createdOrderId}`)}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-md font-medium"
+          >
+            View Orders
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-md font-medium hover:bg-gray-50"
+          >
+            Continue Shopping
+          </button>
         </div>
       </div>
     </div>

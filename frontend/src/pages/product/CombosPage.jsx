@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { axiosInstance } from '../../utils/request';
-import { GET_COLLECTION } from '../../lib/api-client';
-import Breadcrumb from '../../components/common/Breadcrumb';
-import { Skeleton } from '../../components/ui/skeleton';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { axiosInstance } from "../../utils/request";
+import { GET_COLLECTION } from "../../lib/api-client";
+import Breadcrumb from "../../components/common/Breadcrumb";
+import { Skeleton } from "../../components/ui/skeleton";
 
 const CombosPage = () => {
   const [collections, setCollections] = useState([]);
@@ -19,8 +19,8 @@ const CombosPage = () => {
           setCollections(response.data.collections);
         }
       } catch (err) {
-        console.error('Error fetching collections:', err);
-        setError('Failed to load collections. Please try again later.');
+        console.error("Error fetching collections:", err);
+        setError("Failed to load collections. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -29,10 +29,7 @@ const CombosPage = () => {
     fetchCollections();
   }, []);
 
-  const breadcrumbItems = [
-    { label: 'Home', href: '/' },
-    { label: 'Combos' }
-  ];
+  const breadcrumbItems = [{ label: "Home", href: "/" }, { label: "Combos" }];
 
   if (loading) {
     return (
@@ -75,21 +72,23 @@ const CombosPage = () => {
 
         {collections.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No combos are available at this time.</p>
+            <p className="text-gray-500">
+              No combos are available at this time.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {collections.map(collection => (
-              <Link 
-                key={collection._id} 
+            {collections.map((collection) => (
+              <Link
+                key={collection._id}
                 to={`/combos/${collection._id}`}
                 className="block group"
               >
                 <div className="border rounded-lg overflow-hidden transition-shadow hover:shadow-lg">
                   {collection.image ? (
                     <div className="h-48 overflow-hidden">
-                      <img 
-                        src={`https://api.nuturemite.info/collection/${collection.image}`} 
+                      <img
+                        src={`https://api.nuturemite.info/collection/${collection.image}`}
                         alt={collection.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -104,7 +103,9 @@ const CombosPage = () => {
                       {collection.name}
                     </h3>
                     {collection.description && (
-                      <p className="text-gray-600 text-sm line-clamp-2">{collection.description}</p>
+                      <p className="text-gray-600 text-sm line-clamp-2">
+                        {collection.description}
+                      </p>
                     )}
                     <p className="mt-3 text-sm font-medium text-orange-500">
                       View Products →

@@ -1,31 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { axiosInstance, getConfig } from '../../../utils/request';
-import { DELETE_PROFILE, GET_ADMINS, UPDATE_ADMIN } from '../../../lib/api-client';
-import { Edit, Trash2, Check, X, AlertCircle, User, Mail, Phone, MapPin } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { toast } from 'sonner';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import React, { useState, useEffect } from "react";
+import { axiosInstance, getConfig } from "../../../utils/request";
+import {
+  DELETE_PROFILE,
+  GET_ADMINS,
+  UPDATE_ADMIN,
+} from "../../../lib/api-client";
+import {
+  Edit,
+  Trash2,
+  Check,
+  X,
+  AlertCircle,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { Button } from "../../../components/ui/button";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
-  DialogTrigger
-} from '../../../components/ui/dialog';
-import { Input } from '../../../components/ui/input';
-import { Label } from '../../../components/ui/label';
+  DialogTrigger,
+} from "../../../components/ui/dialog";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 
 const ViewAllAdmins = () => {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
   });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -36,17 +50,17 @@ const ViewAllAdmins = () => {
       setLoading(true);
       await getConfig();
       const response = await axiosInstance.post(GET_ADMINS);
-      
+
       if (response.data.success) {
         setAdmins(response.data.admins || []);
       } else {
-        setError('Failed to fetch admins');
-        toast.error('Failed to load admin data');
+        setError("Failed to fetch admins");
+        toast.error("Failed to load admin data");
       }
     } catch (error) {
-      console.error('Error fetching admins:', error);
-      setError('An error occurred while fetching admins');
-      toast.error('Failed to load admin data');
+      console.error("Error fetching admins:", error);
+      setError("An error occurred while fetching admins");
+      toast.error("Failed to load admin data");
     } finally {
       setLoading(false);
     }
@@ -60,11 +74,11 @@ const ViewAllAdmins = () => {
   const handleEdit = (admin) => {
     setSelectedAdmin(admin);
     setFormData({
-      firstName: admin.firstName || '',
-      lastName: admin.lastName || '',
-      email: admin.email || '',
-      phone: admin.phone || '',
-      address: admin.address || '',
+      firstName: admin.firstName || "",
+      lastName: admin.lastName || "",
+      email: admin.email || "",
+      phone: admin.phone || "",
+      address: admin.address || "",
     });
     setDialogOpen(true);
   };
@@ -72,49 +86,61 @@ const ViewAllAdmins = () => {
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle form submission for updating admin
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.address) {
-      toast.error('All fields are required');
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.address
+    ) {
+      toast.error("All fields are required");
       return;
     }
-    
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
+      toast.error("Please enter a valid email address");
       return;
     }
-    
+
     // Phone validation
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(formData.phone)) {
-      toast.error('Please enter a valid 10-digit phone number');
+      toast.error("Please enter a valid 10-digit phone number");
       return;
     }
-    
+
     setUpdateLoading(true);
-    
+
     try {
       await getConfig();
-      const response = await axiosInstance.put(`${UPDATE_ADMIN}/${selectedAdmin._id}`, formData);
-      
+      const response = await axiosInstance.put(
+        `${UPDATE_ADMIN}/${selectedAdmin._id}`,
+        formData
+      );
+
       if (response.data.success) {
-        toast.success('Admin updated successfully');
+        toast.success("Admin updated successfully");
         setDialogOpen(false);
         fetchAdmins(); // Refresh the list
       } else {
-        toast.error(response.data.message || 'Failed to update admin');
+        toast.error(response.data.message || "Failed to update admin");
       }
     } catch (error) {
-      console.error('Error updating admin:', error);
-      toast.error(error.response?.data?.message || 'An error occurred while updating admin');
+      console.error("Error updating admin:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "An error occurred while updating admin"
+      );
     } finally {
       setUpdateLoading(false);
     }
@@ -125,38 +151,53 @@ const ViewAllAdmins = () => {
     try {
       await getConfig();
       const response = await axiosInstance.put(`${UPDATE_ADMIN}/${admin._id}`, {
-        isBlocked: !admin.isBlocked
+        isBlocked: !admin.isBlocked,
       });
-      
+
       if (response.data.success) {
-        toast.success(`Admin ${admin.isBlocked ? 'unblocked' : 'blocked'} successfully`);
+        toast.success(
+          `Admin ${admin.isBlocked ? "unblocked" : "blocked"} successfully`
+        );
         fetchAdmins(); // Refresh the list
       } else {
-        toast.error(response.data.message || `Failed to ${admin.isBlocked ? 'unblock' : 'block'} admin`);
+        toast.error(
+          response.data.message ||
+            `Failed to ${admin.isBlocked ? "unblock" : "block"} admin`
+        );
       }
     } catch (error) {
-      console.error('Error toggling admin status:', error);
-      toast.error(error.response?.data?.message || `An error occurred while ${admin.isBlocked ? 'unblocking' : 'blocking'} admin`);
+      console.error("Error toggling admin status:", error);
+      toast.error(
+        error.response?.data?.message ||
+          `An error occurred while ${
+            admin.isBlocked ? "unblocking" : "blocking"
+          } admin`
+      );
     }
   };
 
   // Handle deleting an admin
   const deleteAdmin = async (adminId) => {
-    if (!window.confirm('Are you sure you want to delete this admin?')) {
+    if (!window.confirm("Are you sure you want to delete this admin?")) {
       return;
-    } 
+    }
     try {
       await getConfig();
-      const response = await axiosInstance.delete(`${DELETE_PROFILE}/${adminId}`);
+      const response = await axiosInstance.delete(
+        `${DELETE_PROFILE}/${adminId}`
+      );
       if (response.data.success) {
-        toast.success('Admin deleted successfully');
+        toast.success("Admin deleted successfully");
         fetchAdmins(); // Refresh the list
       } else {
-        toast.error(response.data.message || 'Failed to delete admin');
+        toast.error(response.data.message || "Failed to delete admin");
       }
     } catch (error) {
-      console.error('Error deleting admin:', error);
-      toast.error(error.response?.data?.message || 'An error occurred while deleting admin');
+      console.error("Error deleting admin:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "An error occurred while deleting admin"
+      );
     }
   };
 
@@ -185,15 +226,24 @@ const ViewAllAdmins = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Admin Management</h1>
         <Button asChild>
-          <a href="/admin/add-admin" className="bg-red-400 hover:bg-red-500 text-white">Add New Admin</a>
+          <a
+            href="/admin/add-admin"
+            className="bg-red-400 hover:bg-red-500 text-white"
+          >
+            Add New Admin
+          </a>
         </Button>
       </div>
-      
+
       {admins.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <User className="h-12 w-12 mx-auto text-gray-400" />
-          <h2 className="mt-4 text-lg font-medium text-gray-900">No Admins Found</h2>
-          <p className="mt-2 text-gray-500">No admin accounts have been created yet.</p>
+          <h2 className="mt-4 text-lg font-medium text-gray-900">
+            No Admins Found
+          </h2>
+          <p className="mt-2 text-gray-500">
+            No admin accounts have been created yet.
+          </p>
         </div>
       ) : (
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -201,22 +251,40 @@ const ViewAllAdmins = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Admin
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Contact
+                  </th>
                   {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> */}
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {admins.map((admin) => (
-                  <tr key={admin._id} className={admin.isBlocked ? 'bg-gray-100' : ''}>
+                  <tr
+                    key={admin._id}
+                    className={admin.isBlocked ? "bg-gray-100" : ""}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           {admin.image ? (
-                            <img 
-                              className="h-10 w-10 rounded-full object-cover" 
-                              src={`https://api.nuturemite.info/profile/${admin.image}`} 
+                            <img
+                              className="h-10 w-10 rounded-full object-cover"
+                              src={`https://api.nuturemite.info/profile/${admin.image}`}
                               alt={`${admin.firstName} ${admin.lastName}`}
                             />
                           ) : (
@@ -243,7 +311,9 @@ const ViewAllAdmins = () => {
                         </div>
                         <div className="flex items-center text-sm text-gray-500">
                           <MapPin className="h-4 w-4 mr-2" />
-                          <span className="truncate max-w-xs">{admin.address}</span>
+                          <span className="truncate max-w-xs">
+                            {admin.address}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -258,10 +328,10 @@ const ViewAllAdmins = () => {
                     </td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <Button 
-                          onClick={() => handleEdit(admin)} 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          onClick={() => handleEdit(admin)}
+                          variant="outline"
+                          size="sm"
                           className="text-blue-600 hover:text-blue-800"
                         >
                           <Edit className="h-4 w-4 mr-1" /> Update
@@ -270,11 +340,9 @@ const ViewAllAdmins = () => {
                           onClick={() => deleteAdmin(admin._id)}
                           variant="outline"
                           size="sm"
-                          className={'text-red-600 hover:text-red-800'}
+                          className={"text-red-600 hover:text-red-800"}
                         >
-                         
-                              <X className="h-4 w-4 mr-1" /> Delete
-                           
+                          <X className="h-4 w-4 mr-1" /> Delete
                         </Button>
                       </div>
                     </td>
@@ -292,7 +360,7 @@ const ViewAllAdmins = () => {
           <DialogHeader>
             <DialogTitle>Update Admin Details</DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -306,7 +374,7 @@ const ViewAllAdmins = () => {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
@@ -319,7 +387,7 @@ const ViewAllAdmins = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -336,7 +404,7 @@ const ViewAllAdmins = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <div className="relative">
@@ -352,7 +420,7 @@ const ViewAllAdmins = () => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
               <div className="relative">
@@ -368,7 +436,7 @@ const ViewAllAdmins = () => {
                 />
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button
                 type="button"

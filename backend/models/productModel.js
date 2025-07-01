@@ -158,6 +158,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    feature:{
+      type: String,
+      required: false,
+      default: "new",
+    },
     keyFeatures: {
       type: String,
       required: false,

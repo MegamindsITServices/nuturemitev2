@@ -164,7 +164,6 @@ const CustomerOrderDetail = () => {
         img.src = logoUrl;
       };
 
-    
       addLogoAndText(() => {
         // Invoice Title
         doc.setFontSize(12);
@@ -462,7 +461,6 @@ const CustomerOrderDetail = () => {
       return;
 
       // Invoice Title
-    
     } catch (error) {
       console.error("Error generating invoice:", error);
       alert("Failed to generate invoice. Please try again.");

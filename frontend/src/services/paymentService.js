@@ -11,15 +11,23 @@ const apiClient = axios.create({
 
 export const paymentService = {
   // Create a new payment for the cart items
-  createPayment: async (cartItems, customerInfo, totalAmount, shippingAddress) => {
+  createPayment: async (cartItems, customerInfo, totalAmount, shippingAddress, orderData) => {
     try {
-      const response = await apiClient.post('/api/payment/create', {
+      // const response = await apiClient.post('/api/payment/create', {
+      //   cartItems,
+      //   customerInfo,
+      //   totalAmount,
+      //   shippingAddress
+      // });
+      
+     
+      const response = await apiClient.post("/api/payment/create", {
         cartItems,
         customerInfo,
         totalAmount,
-        shippingAddress
+        shippingAddress,
+        orderData, 
       });
-      
       return response.data;
     } catch (error) {
       console.error('Error creating payment:', error);
@@ -82,6 +90,7 @@ export const paymentService = {
       throw error;
     }
   },
+
     // Process PhonePe payment by redirecting to the PhonePe payment page
   processPhonePePayment: (paymentUrl) => {
     if (typeof window !== 'undefined') {
@@ -123,11 +132,6 @@ export const paymentService = {
       return Promise.reject(new Error('Cannot process payment in non-browser environment'));
     }
   },
-
-
-
-  // ------------------------------------------>
-
   
 };
 

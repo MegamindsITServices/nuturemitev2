@@ -82,6 +82,7 @@ const Checkout = () => {
   const shipping = subtotal < 1000 ? shippingTotal() : 0;
   const tax = 0;
   const totalAmount = subtotal + shipping + tax;
+  // const totalAmount = 1;
 
   // Form validation
   const [errors, setErrors] = useState({});
@@ -379,11 +380,26 @@ const Checkout = () => {
       }
 
       // For online payment
+      const orderData = {
+        products: cartItems.map((item) => ({
+          product: item.productId,
+          quantity: item.quantity,
+        })),
+        buyer: auth.user.userId,
+        address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
+        phone: contactInfo.phone,
+        totalPrice: parseFloat(totalAmount), // Ensure totalPrice is a number
+        payment: {
+          method: "PhonePe",
+          status: "Pending",
+        },
+      };
       const paymentResponse = await paymentService.createPayment(
         cartItems,
         customerInfo,
         totalAmount,
-        shippingAddress
+        shippingAddress,
+        orderData
       );
 
       if (paymentResponse.success) {

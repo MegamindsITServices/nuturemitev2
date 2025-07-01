@@ -51,7 +51,7 @@ const allowedOrigins = [
   "http://api.nuturemite.info",
   "https://api.nuturemite.info",
   "https://api.nuturemite.info/",
-  "http://localhost:5173",
+  "https://nuturemite.info",
   undefined,
 ];
 const corsOptions = {
@@ -156,7 +156,7 @@ app.use("/api/blog", blogRouter);
 app.use("/api/reviews", reviewRoute);
 app.use("/api/admin", adminRouter);
 app.use("/api/user/enquiry", EnquiryMessageRoute);
-app.use("/api/transaction", transactionRoutes)
+app.use("/api/transaction", transactionRoutes);
 app.post("/api/user/saveShippingAddress", async (req, res) => {
   const { shippingAddress, _id } = req.body;
   const data = await User.findByIdAndUpdate({ _id }, { shippingAddress });
@@ -180,18 +180,26 @@ app.get("/", (req, res) => {
 import { generateOrderId } from "./helpers/paymentHelper.js";
 import blogRouter from "./routes/blogRoute.js";
 
+// In-memory store for temporary orders (keyed by orderId)
+const tempOrderStore = new Map();
+
 app.post("/api/payment/create", async (req, res) => {
   try {
     const { cartItems, customerInfo, totalAmount, shippingAddress } = req.body;
-
-    if (!cartItems || !customerInfo || !totalAmount) {
+    const order = req.body.orderData;
+    if (!customerInfo || !totalAmount) {
       return res.status(400).json({
         success: false,
         message: "Missing required information",
       });
     }
-
     const orderId = await generateOrderId();
+
+    // Store the order in the in-memory map for later retrieval (expires on server restart)
+    if (order) {
+      tempOrderStore.set(orderId, order);
+      // Optionally, you can add a timestamp and periodically clean up old entries
+    }
 
     // Import the helper function
     const { createPhonePeOrder } = await import("./helpers/phonepeHelper.js");
@@ -211,7 +219,7 @@ app.post("/api/payment/create", async (req, res) => {
       order_meta: {
         return_url: `${
           process.env.FRONTEND_URL || "https://nuturemite.info"
-        }/order-success/${orderId}?order_id={order_id}`,
+        }/order-success/${orderId}?order_id=${orderId}`,
         notify_url: `${
           process.env.BACKEND_URL || "https://api.nuturemite.info"
         }/api/payment/webhook`,
@@ -236,7 +244,13 @@ app.post("/api/payment/create", async (req, res) => {
         order_id: orderId,
         // Save these details temporarily - we'll save them properly after payment succeeds
         orderData: {
-          products: cartItems.map((item) => ({product:item.productId,quantity:item.quantity })|| ({productId:item._id,quantity:item.quantity })),
+          products: cartItems.map(
+            (item) =>
+              ({ product: item.productId, quantity: item.quantity } || {
+                productId: item._id,
+                quantity: item.quantity,
+              })
+          ),
           productName: cartItems.map((item) => item.name).join(", "),
           buyer: customerInfo.userId,
           address: `${shippingAddress.address}, ${shippingAddress.city}, ${shippingAddress.state} - ${shippingAddress.postalCode}`,
@@ -264,124 +278,62 @@ app.post("/api/payment/create", async (req, res) => {
     });
   }
 });
+
 app.post("/api/payment/verify", async (req, res) => {
   try {
     const { orderId } = req.body;
-    const orderData = await Order.findById(orderId);
+    // const orderData = await Order.findById(orderId);
     // check if order payment type is cod
-    if (orderData && orderData.payment.method === "Cash on Delivery") {
-      return res.status(200).json({
-        success: true,
-        message: "Order is Cash on Delivery, no payment verification needed",
-        order: orderData,
-      });
-    }
+    // if (orderData && orderData.payment.method === "Cash on Delivery") {
+    //   return res.status(200).json({
+    //     success: true,
+    //     message: "Order is Cash on Delivery, no payment verification needed",
+    //     order: orderData,
+    //   });
+    // }
     if (!orderId) {
       return res.status(400).json({
         success: false,
         message: "Order ID is required",
       });
     }
+
     // Import the helper function
     const { getPhonePeOrderStatus } = await import(
       "./helpers/phonepeHelper.js"
     );
 
+    // Check if we have a temporary order stored
+    if (!tempOrderStore.has(orderId)) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found or has expired",
+        orderId,
+      });
+    }
+
+    // Retrieve the order data from the temporary store
+    const orderData2 = tempOrderStore.get(orderId);
+    tempOrderStore.delete(orderId);
     try {
       // Get payment status from PhonePe
-      const paymentData = await getPhonePeOrderStatus(orderId);
+      const paymentData = await getPhonePeOrderStatus(orderId, orderData2);
 
       // Check payment status
       if (paymentData && paymentData.order_status === "PAID") {
-        // Find if an order with this transaction ID already exists
-        let order = await Order.findOne({ "payment.transactionId": orderId });
-
-        // If order doesn't exist, create it now (only for successful payments)
-        if (!order) {
-          // We need to retrieve the saved order data from the original payment creation
-          // In a production system, you'd store this in Redis or another temporary store
-          // For this implementation, we'll get data from the payment gateway response
-
-          // Create a new order
-           const productIdsArray = paymentData.order_meta?.product_ids
-  ? event.data.order_meta.product_ids.split(",")
-  : [];
-
-const structuredProducts = productIdsArray.map((productId) => ({
-  product: productId.trim(), // ensure clean ID
-  quantity: 1, // default quantity
-}));
-          const newOrder = new Order({
-            products:structuredProducts,
-            productName: paymentData.order_meta?.product_names || "Order Items",
-            buyer: paymentData.customer_details.customer_id,
-            address:
-              paymentData.order_meta?.shipping_address ||
-              "Address from payment data",
-            phone: paymentData.customer_details.customer_phone,
-            totalPrice: paymentData.order_amount,
-            payment: {
-              method: "PhonePe",
-              transactionId: orderId,
-              status: "Completed",
-              responseData: paymentData,
-            },
-            status: "Processing",
-          });
-
-          order = await newOrder.save();
-        } else {
-          // Update existing order payment status
-          order.payment = {
-            ...order.payment,
-            status: "Completed",
-            responseData: paymentData,
-          };
-
-          // Update order status
-          order.status = "Processing";
-
-          await order.save();
-        }
-
         res.json({
           success: true,
           message: "Payment verified successfully",
           paymentData,
-          order,
+          orderData2,
         });
       } else {
-        // Payment failed or is pending
-        // Check if we already created an order for this transaction
-        const existingOrder = await Order.findOne({
-          "payment.transactionId": orderId,
+        // No order was created, which is what we want for failed payments
+        res.json({
+          success: false,
+          message: "Payment verification failed",
+          paymentData,
         });
-
-        if (existingOrder) {
-          // If an order exists, update it to failed status
-          existingOrder.payment = {
-            ...existingOrder.payment,
-            status: "Failed",
-            responseData: paymentData,
-          };
-
-          // Don't change order status - we'll either cancel it or let admin handle it
-          await existingOrder.save();
-
-          res.json({
-            success: false,
-            message: "Payment verification failed",
-            paymentData,
-            order: existingOrder,
-          });
-        } else {
-          // No order was created, which is what we want for failed payments
-          res.json({
-            success: false,
-            message: "Payment verification failed",
-            paymentData,
-          });
-        }
       }
     } catch (error) {
       console.error("Error verifying payment:", error);
@@ -424,15 +376,15 @@ app.post("/api/payment/webhook", async (req, res) => {
         if (!order) {
           // Create a new order for successful payments
           const productIdsArray = event.data.order_meta?.product_ids
-  ? event.data.order_meta.product_ids.split(",")
-  : [];
+            ? event.data.order_meta.product_ids.split(",")
+            : [];
 
-const structuredProducts = productIdsArray.map((productId) => ({
-  product: productId.trim(), // ensure clean ID
-  quantity: 1, // default quantity
-}));
+          const structuredProducts = productIdsArray.map((productId) => ({
+            product: productId.trim(), // ensure clean ID
+            quantity: 1, // default quantity
+          }));
           const newOrder = new Order({
-            products:structuredProducts,
+            products: structuredProducts,
             productName: event.data.order_meta?.product_names || "Order Items",
             buyer: event.data.customer_details.customer_id,
             address:
