@@ -158,34 +158,74 @@ export const addProduct = async (req, res) => {
 
 export const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, sort, search } = req.query;
-
+    const { 
+      page = 1, 
+      limit = 10, 
+      sort, 
+      search,
+      minPrice,
+      maxPrice,
+      collection,
+      category
+    } = req.query;
+    
     // Create query object
     const query = {};
 
     // Add search functionality
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { keyFeatures: { $regex: search, $options: 'i' } }
       ];
     }
-
+    
+    // Add price range filter
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+    
+    // Add collection filter
+    if (collection) {
+      query.collection = collection;
+    }
+    
+    // Add category filter (if you have categories in your schema)
+    if (category) {
+      query['shortDescription.category'] = { $regex: category, $options: 'i' };
+    }
+    
     // Create sort object
     let sortOptions = {};
     if (sort) {
-      // Example: sort=price,-name (ascending price, descending name)
-      const sortFields = sort.split(",");
-      sortFields.forEach((field) => {
-        if (field.startsWith("-")) {
-          sortOptions[field.substring(1)] = -1;
-        } else {
-          sortOptions[field] = 1;
-        }
-      });
+      switch (sort) {
+        case 'price-asc':
+          sortOptions = { price: 1 };
+          break;
+        case 'price-desc':
+          sortOptions = { price: -1 };
+          break;
+        case 'name-asc':
+          sortOptions = { name: 1 };
+          break;
+        case 'name-desc':
+          sortOptions = { name: -1 };
+          break;
+        case 'newest':
+          sortOptions = { createdAt: -1 };
+          break;
+        case 'oldest':
+          sortOptions = { createdAt: 1 };
+          break;
+        default:
+          sortOptions = { createdAt: -1 };
+      }
     } else {
       // Default sort by creation date, newest first
-      sortOptions = { _id: -1 };
+      sortOptions = { createdAt: -1 };
     }
 
     // Calculate pagination
@@ -198,22 +238,88 @@ export const getProducts = async (req, res) => {
       .sort(sortOptions)
       .skip(skip)
       .limit(limitNumber)
-      .populate("collection", "name slug")
-      .populate("reviews");
-
+      .populate('collection', 'name slug')
+      .populate('reviews')
+    
     // Get total count for pagination
     const totalProducts = await Product.countDocuments(query);
-
+    
+    // Get filter options for frontend
+    const filterOptions = await getFilterOptions();
+    
     res.status(200).json({
       products,
       currentPage: pageNumber,
       totalPages: Math.ceil(totalProducts / limitNumber),
       totalProducts,
+      filterOptions
     });
   } catch (error) {
+    console.error('Error in getProducts:', error);
     res.status(500).json({ message: error.message });
   }
 };
+
+// Helper function to get available filter options
+const getFilterOptions = async () => {
+  try {
+    // Get all collections
+    const collections = await Product.aggregate([
+      { $match: { collection: { $exists: true } } },
+      { $lookup: { from: 'collections', localField: 'collection', foreignField: '_id', as: 'collectionData' } },
+      { $unwind: '$collectionData' },
+      { $group: { _id: '$collectionData._id', name: { $first: '$collectionData.name' } } },
+      { $sort: { name: 1 } }
+    ]);
+
+    // Get price range
+    const priceRange = await Product.aggregate([
+      { $group: { _id: null, minPrice: { $min: '$price' }, maxPrice: { $max: '$price' } } }
+    ]);
+
+    // Get categories from shortDescription
+    const categories = await Product.aggregate([
+      { $unwind: '$shortDescription' },
+      { $match: { 'shortDescription.category': { $exists: true, $ne: '' } } },
+      { $group: { _id: '$shortDescription.category' } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Get brands from shortDescription
+    const brands = await Product.aggregate([
+      { $unwind: '$shortDescription' },
+      { $match: { 'shortDescription.brand': { $exists: true, $ne: '' } } },
+      { $group: { _id: '$shortDescription.brand' } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    return {
+      collections: collections.map(c => ({ id: c._id, name: c.name })),
+      priceRange: priceRange[0] || { minPrice: 0, maxPrice: 1000 },
+      categories: categories.map(c => c._id),
+      brands: brands.map(b => b._id)
+    };
+  } catch (error) {
+    console.error('Error getting filter options:', error);
+    return {
+      collections: [],
+      priceRange: { minPrice: 0, maxPrice: 1000 },
+      categories: [],
+      brands: []
+    };
+  }
+};
+
+// Alternative endpoint for getting filter options separately
+// export const getFilterOptions = async (req, res) => {
+//   try {
+//     const filterOptions = await getFilterOptions();
+//     res.status(200).json(filterOptions);
+//   } catch (error) {
+//     console.error('Error in getFilterOptions:', error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 export const getProductBySlug = async (req, res) => {
   try {

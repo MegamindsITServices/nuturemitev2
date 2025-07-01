@@ -28,19 +28,24 @@ const HoverDropdown = ({ trigger, children }) => {
 
   return (
     <div
-      className="relative group"
+      className="relative inline-block"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <div className="flex items-center gap-1 cursor-pointer">{trigger}</div>
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg py-2 px-2 min-w-[180px] z-50 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200">
-          {children}
-        </div>
-      )}
+      <div className="flex items-center gap-1 cursor-pointer">
+        {trigger}
+      </div>
+      <div
+        className={`absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg py-2 px-2 min-w-[180px] z-50 transition-all duration-200 ${
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
+      >
+        {children}
+      </div>
     </div>
   );
 };
+
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -183,7 +188,7 @@ const Navbar = () => {
             <div className="flex-shrink-0">
               <Link to="/">
                 <img
-                  src="/images/logo.png"
+                  src="/images/logo.jpg"
                   alt="Nuturemite"
                   className="h-[8vh] md:h-[10vh] object-contain"
                 />
@@ -423,7 +428,7 @@ const Navbar = () => {
                       {auth.user.isUser && (
                         <Link
                           to="/customer/dashboard"
-                          className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-200 text-sm"
+                          className="block text-gray-800 hover:bg-gray-100 hover:text-[#ed6663] px-3 py-1.5 rounded-md transition-colors duration-500 text-sm"
                         >
                           Customer Dashboard
                         </Link>
@@ -645,8 +650,46 @@ const Navbar = () => {
                 </Link>
 
                 <div className="border-b"></div>
-
-                <div className="py-2 px-3">
+   <Link
+            to="/products"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            PRODUCTS
+          </Link>
+          {/* <Link
+            to="/deals"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            DEALS
+          </Link> */}
+          {/* <Link
+            to="/for-business"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            FOR BUSINESS
+          </Link> */}
+          <div className="border-b"></div>
+          <Link
+            to="/about"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            ABOUT US
+          </Link>
+          <div className="border-b"></div>
+          <Link
+            to="/contact"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            CONTACT US
+          </Link>
+       <div className="border-b"></div>
+           <Link
+            to="/business"
+            className="hover:text-opacity-80 transition-opacity"
+          >
+            BUSINESS
+          </Link>
+                {/* <div className="py-2 px-3">
                   <div className="font-medium mb-2">Categories</div>
                   <div className="pl-2 flex flex-col space-y-2">
                     {getCollections.slice(0, 5).map((collection) => (
@@ -671,18 +714,18 @@ const Navbar = () => {
                       </Link>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 <div className="border-b"></div>
 
-                <Link
+                {/* <Link
                   to="/combos"
                   className="flex items-center gap-2 py-2 px-3 hover:bg-gray-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Package size={18} />
                   <span>Combos</span>
-                </Link>
+                </Link> */}
 
                 <Link
                   to="/blogs"

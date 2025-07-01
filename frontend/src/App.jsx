@@ -57,6 +57,7 @@ import PaymentManagement from "./pages/Dashboard/orders/PaymentManagement";
 import TermsAndConditions from "./pages/termsandcondition/termAndCondition";
 import BusinessPage from "./pages/business/Business";
 import UpdatePasswordPage from "./pages/Dashboard/admins/UpdatePassword";
+import WhatsAppButton from "./components/ui/WhatsappIcon";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -157,6 +158,7 @@ const App = () => {
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <WhatsAppButton/>
       {!isAdminRoute && !isNotFound && !isUserRoute && <Footer />}
     </CartProvider>
   );
